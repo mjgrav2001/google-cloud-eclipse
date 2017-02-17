@@ -98,7 +98,7 @@ public class StandardFacetInstallationTest {
   }
 
   @Test
-  public void testStandardFacetInstallation_DoesNotOverwriteWebXml()
+  public void testStandardFacetInstallation_doesNotOverwriteWebXml()
       throws CoreException, IOException {
     // Create an empty web.xml.
     IProject project = projectCreator.getProject();

@@ -22,13 +22,13 @@ public class BannedElementTest {
 
   @Test(expected = NullPointerException.class)
   public void testBannedElementConstructor_nullElementName() {
-    BannedElement element = new BannedElement(null);
+    new BannedElement(null);
   }
-  
+
   @Test(expected = NullPointerException.class)
   public void testBannedElementConstructor_nullLocation() {
-    BannedElement element = new BannedElement("test", null, 0);
+    new BannedElement("test", null, 0);
   }
-  
+
 }
 

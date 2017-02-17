@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.projectselector;
+package com.google.cloud.tools.eclipse.ui.util.databinding;
 
+import static org.junit.Assert.assertEquals;
+
+import org.eclipse.core.runtime.IStatus;
 import org.junit.Test;
 
-public class DummyTest {
+public class ProjectSelectorValidatorTest {
+
   @Test
-  public void test() {
+  public void testValidate_nullString() {
+    assertEquals(IStatus.ERROR, new ProjectSelectorValidator().validate(null).getSeverity());
+  }
+
+  @Test
+  public void testValidate_emptyString() {
+    assertEquals(IStatus.ERROR, new ProjectSelectorValidator().validate("").getSeverity());
   }
 }

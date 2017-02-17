@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.appengine.deploy;
+package com.google.cloud.tools.eclipse.projectselector;
 
-/**
- * Thrown if the version of a deployed App Engine application cannot be determined.
- */
-public class VersionNotFoundException extends Exception {
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-  private static final long serialVersionUID = 1L;
-  
-  public VersionNotFoundException(String message, Throwable cause) {
-    super(message, cause);
+import org.junit.Test;
+
+public class MessagesTest {
+
+  @Test
+  public void testProjectSelectorHeaderName() {
+    assertThat(Messages.getString("projectselector.header.name"), is("Name"));
   }
 
+  @Test
+  public void testName() {
+    assertThat(Messages.getString("projectselector.header.id"), is("ID"));
+  }
 }

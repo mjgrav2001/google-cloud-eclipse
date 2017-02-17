@@ -20,12 +20,20 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
 import com.google.cloud.tools.eclipse.login.ui.AccountSelector;
 import com.google.cloud.tools.eclipse.login.ui.AccountSelectorObservableValue;
+import com.google.cloud.tools.eclipse.projectselector.GcpProject;
+import com.google.cloud.tools.eclipse.projectselector.ProjectRepository;
+import com.google.cloud.tools.eclipse.projectselector.ProjectRepositoryException;
+import com.google.cloud.tools.eclipse.projectselector.ProjectSelector;
 import com.google.cloud.tools.eclipse.ui.util.FontUtil;
 import com.google.cloud.tools.eclipse.ui.util.databinding.BucketNameValidator;
-import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectIdInputValidator;
+import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectSelectorValidator;
 import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectVersionValidator;
+import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.databinding.Binding;
@@ -38,14 +46,19 @@ import org.eclipse.core.databinding.observable.Observables;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
+import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.swt.ISWTObservableValue;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.databinding.viewers.IViewerObservableValue;
+import org.eclipse.jface.databinding.viewers.ViewerProperties;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -70,7 +83,7 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
   private AccountSelector accountSelector;
 
-  private Text projectId;
+  private ProjectSelector projectSelector;
 
   private Text version;
 
@@ -90,8 +103,11 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
   private Runnable layoutChangedHandler;
   private boolean requireValues = true;
 
+  private ProjectRepository projectRepository;
+
   public StandardDeployPreferencesPanel(Composite parent, IProject project,
-      IGoogleLoginService loginService, Runnable layoutChangedHandler, boolean requireValues) {
+      IGoogleLoginService loginService, Runnable layoutChangedHandler, boolean requireValues,
+      ProjectRepository projectRepository) {
     super(parent, SWT.NONE);
 
     this.layoutChangedHandler = layoutChangedHandler;
@@ -99,6 +115,8 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
     GridLayout gridLayout = new GridLayout();
     gridLayout.numColumns = 2;
+
+    this.projectRepository = projectRepository;
 
     createCredentialSection(loginService);
 
@@ -166,13 +184,21 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
   }
 
   private void setupProjectIdDataBinding(DataBindingContext context) {
-    ISWTObservableValue projectIdField = WidgetProperties.text(SWT.Modify).observe(projectId);
-
+    IViewerObservableValue projectList =
+        ViewerProperties.singleSelection().observe(projectSelector.getViewer());
     IObservableValue projectIdModel = PojoProperties.value("projectId").observe(model);
 
-    context.bindValue(projectIdField, projectIdModel,
-        new UpdateValueStrategy().setAfterGetValidator(new ProjectIdInputValidator(requireValues)),
-        new UpdateValueStrategy().setAfterGetValidator(new ProjectIdInputValidator(requireValues)));
+    UpdateValueStrategy gcpProjectToProjectId =
+        new UpdateValueStrategy().setConverter(new GcpProjectToProjectIdConverter());
+    UpdateValueStrategy projectIdToGcpProject =
+        new UpdateValueStrategy().setConverter(new ProjectIdToGcpProjectConverter());
+    if (requireValues) {
+      IValidator validator = new ProjectSelectorValidator();
+      gcpProjectToProjectId.setAfterConvertValidator(validator);
+      projectIdToGcpProject.setAfterGetValidator(validator);
+    }
+
+    context.bindValue(projectList, projectIdModel, gcpProjectToProjectId, projectIdToGcpProject);
   }
 
   private void setupProjectVersionDataBinding(DataBindingContext context) {
@@ -255,13 +281,19 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
   private void createProjectIdSection() {
     Label projectIdLabel = new Label(this, SWT.LEAD);
-    projectIdLabel.setText(Messages.getString("project.id"));
+    projectIdLabel.setText(Messages.getString("project"));
     projectIdLabel.setToolTipText(Messages.getString("tooltip.project.id"));
-
-    projectId = new Text(this, SWT.LEAD | SWT.SINGLE | SWT.BORDER);
-    projectId.setToolTipText(Messages.getString("tooltip.project.id"));
-    GridData projectIdTextGridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-    projectId.setLayoutData(projectIdTextGridData);
+    GridDataFactory.swtDefaults().align(SWT.BEGINNING, SWT.BEGINNING).applyTo(projectIdLabel);
+    projectSelector = new ProjectSelector(this);
+    GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+      .grab(true, false).hint(300, 100).applyTo(projectSelector);
+    accountSelector.addSelectionListener(new Runnable() {
+      @Override
+      public void run() {
+        Credential selectedCredential = accountSelector.getSelectedCredential();
+        projectSelector.setProjects(retrieveProjects(selectedCredential));
+      }
+    });
   }
 
   private void createProjectVersionSection() {
@@ -336,6 +368,63 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
     GridLayoutFactory.fillDefaults().numColumns(2).generateLayout(bucketComposite);
     return bucketComposite;
+  }
+
+  private List<GcpProject> retrieveProjects(Credential selectedCredential) {
+    try {
+      if (selectedCredential == null) {
+        return Collections.emptyList();
+      }
+      return projectRepository.getProjects(selectedCredential);
+    } catch (ProjectRepositoryException ex) {
+      ErrorDialog.openError(getShell(),
+                            Messages.getString("projectselector.retrieveproject.error.title"),
+                            Messages.getString("projectselector.retrieveproject.error.message",
+                                               ex.getLocalizedMessage()),
+                            StatusUtil.error(this,
+                                             Messages.getString("projectselector.retrieveproject.error.title"),
+                                             ex));
+      return Collections.emptyList();
+    }
+  }
+
+  private final class ProjectIdToGcpProjectConverter extends Converter {
+
+    private ProjectIdToGcpProjectConverter() {
+      super(String.class, GcpProject.class);
+    }
+
+    @Override
+    public Object convert(Object fromObject) {
+      if (fromObject == null) {
+        return null;
+      }
+
+      Preconditions.checkArgument(fromObject instanceof String);
+      try {
+        return projectRepository.getProject(accountSelector.getSelectedCredential(),
+                                           (String) fromObject);
+      } catch (ProjectRepositoryException e) {
+        return null;
+      }
+    }
+  }
+
+  private final class GcpProjectToProjectIdConverter extends Converter {
+
+    private GcpProjectToProjectIdConverter() {
+      super(GcpProject.class, String.class);
+    }
+
+    @Override
+    public Object convert(Object fromObject) {
+      if (fromObject == null) {
+        return null;
+      }
+
+      Preconditions.checkArgument(fromObject instanceof GcpProject);
+      return ((GcpProject) fromObject).getId();
+    }
   }
 
   /**

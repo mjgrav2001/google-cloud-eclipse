@@ -17,7 +17,6 @@
 package com.google.cloud.tools.eclipse.appengine.facets;
 
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -107,7 +106,6 @@ public class AppEngineStandardRuntimeChangeListener implements IFacetedProjectLi
     }
 
     // Add the App Engine facet
-    IProject project = facetedProject.getProject();
     Job addFacetJob = new InstallAppEngineFacetJob(facetedProject, newRuntime);
     addFacetJob.schedule();
   }

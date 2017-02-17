@@ -28,24 +28,15 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AnalyticsOptInArea extends PreferenceArea {
-
-  private static final Logger logger = Logger.getLogger(AnalyticsOptInArea.class.getName());
 
   private Button optInStatusEditor;
 
   /**
    * Create the area contents. Not intended to be called outside of the preference area framework.
-   * 
+   *
    * @noreference
    */
   @Override
@@ -78,7 +69,7 @@ public class AnalyticsOptInArea extends PreferenceArea {
         WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), Messages.getString("GOOGLE_PRIVACY_POLICY_URL"));
       }
     });
-    
+
     load();
     return container;
   }

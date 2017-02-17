@@ -21,18 +21,13 @@ import com.google.cloud.tools.appengine.cloudsdk.AppEngineJavaComponentsNotInsta
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkNotFoundException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkOutOfDateException;
-import com.google.cloud.tools.eclipse.preferences.Messages;
 import com.google.cloud.tools.eclipse.preferences.areas.PreferenceArea;
 import com.google.cloud.tools.eclipse.sdk.internal.PreferenceConstants;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
@@ -44,18 +39,14 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
 public class CloudSdkPreferenceArea extends PreferenceArea {
   /** Preference Page ID that hosts this area. */
   public static final String PAGE_ID = "com.google.cloud.tools.eclipse.preferences.main";
-  private static final Logger logger = Logger.getLogger(CloudSdkPreferenceArea.class.getName());
 
   private CloudSdkDirectoryFieldEditor sdkLocation;
   private IStatus status = Status.OK_STATUS;
@@ -156,7 +147,7 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
           SdkUiMessages.getString("CloudSdkNotFound", sdk.getSdkPath()));
       return false;
     } catch (AppEngineJavaComponentsNotInstalledException ex) {
-      status = new Status(IStatus.WARNING, getClass().getName(), 
+      status = new Status(IStatus.WARNING, getClass().getName(),
           SdkUiMessages.getString("AppEngineJavaComponentsNotInstalled", ex.getMessage()));
       return false;
     } catch (CloudSdkOutOfDateException ex) {

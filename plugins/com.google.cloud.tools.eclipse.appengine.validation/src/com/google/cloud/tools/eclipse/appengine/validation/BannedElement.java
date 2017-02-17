@@ -26,7 +26,7 @@ public class BannedElement {
   private final String message;
   private final DocumentLocation start;
   private final int length;
-  
+
   /**
    * @param length the length of the marker underline. Length == 0 results in a
    *        marker in the vertical ruler and no underline
@@ -39,15 +39,15 @@ public class BannedElement {
     this.start = start;
     this.length = length;
   }
-  
+
   public BannedElement(String elementName) {
     this(elementName, new DocumentLocation(0, 0), 0);
   }
-  
+
   public String getMessage() {
     return message;
   }
-  
+
   public DocumentLocation getStart() {
     return start;
   }
