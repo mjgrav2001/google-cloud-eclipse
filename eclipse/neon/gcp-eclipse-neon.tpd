@@ -15,7 +15,7 @@ location "http://download.eclipse.org/cbi/updates/license" {
     org.eclipse.license.feature.group    
 }
 
-location "http://download.eclipse.org/eclipse/updates/4.6-M-builds/M-4.6.3RC1-201702080400" {
+location "http://download.eclipse.org/eclipse/updates/4.6-M-builds/M-4.6.3RC2-201702150400/" {
 	org.eclipse.sdk.feature.group
 	org.eclipse.jdt.feature.group
 }
