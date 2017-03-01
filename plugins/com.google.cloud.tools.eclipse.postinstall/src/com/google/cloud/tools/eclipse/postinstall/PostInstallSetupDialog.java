@@ -36,14 +36,11 @@ public class PostInstallSetupDialog extends Dialog {
 
   private static final Logger logger = Logger.getLogger(PostInstallSetupDialog.class.getName());
 
-  private final Runnable closeCallback;
-
   private final ScopedPreferenceStore analyticsPreferenceStore;
   private final PreferenceArea analyticsArea;
 
-  public PostInstallSetupDialog(Shell parent, Runnable closeCallback) {
+  public PostInstallSetupDialog(Shell parent) {
     super(parent);
-    this.closeCallback = closeCallback;
 
     analyticsArea = new AnalyticsOptInArea();
     analyticsPreferenceStore = (ScopedPreferenceStore)
@@ -75,28 +72,26 @@ public class PostInstallSetupDialog extends Dialog {
 
   @Override
   protected void okPressed() {
-    analyticsArea.performApply();  // Do before dialog is disposed.
+    analyticsArea.performApply();
     super.okPressed();
-    doClosingTasks();
+    savePreferences();
   }
 
   @Override
   protected void cancelPressed() {
     super.cancelPressed();
-    doClosingTasks();
+    savePreferences();
   }
 
   /** When the dialog closes in other ways than pressing the buttons. */
   @Override
   protected void handleShellCloseEvent() {
     super.handleShellCloseEvent();
-    doClosingTasks();
+    savePreferences();
   }
 
-  private void doClosingTasks() {
+  private void savePreferences() {
     try {
-      analyticsArea.dispose();
-      closeCallback.run();
       analyticsPreferenceStore.save();
     } catch (IOException ex) {
       logger.log(Level.WARNING, "Failed to save preferences.", ex);

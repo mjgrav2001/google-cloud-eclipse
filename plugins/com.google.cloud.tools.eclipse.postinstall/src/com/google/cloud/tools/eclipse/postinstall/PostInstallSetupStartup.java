@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.postinstall;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
@@ -37,34 +38,37 @@ public class PostInstallSetupStartup implements IStartup {
   @Override
   public void earlyStartup() {
     IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
-    boolean setupDone = preferences.getBoolean(PREFERENCE_KEY_SETUP_DONE, false);
-    if (!setupDone) {
-      showPostInstallSetupDialog();
+    showSetupDialogOnce(preferences, new Runnable() {
+      @Override
+      public void run() {
+        openDialogInUiThread();
+      }
+    });
+  }
+
+  @VisibleForTesting
+  void showSetupDialogOnce(IEclipsePreferences preferences, Runnable dialogOpener) {
+    try {
+      boolean setupDone = preferences.getBoolean(PREFERENCE_KEY_SETUP_DONE, false);
+      if (!setupDone) {
+        dialogOpener.run();
+
+        preferences.putBoolean(PREFERENCE_KEY_SETUP_DONE, false);
+        preferences.flush();
+      }
+    } catch (BackingStoreException ex) {
+      logger.log(Level.WARNING, "Failed to save preferecens.", ex);
     }
   }
 
-  private void showPostInstallSetupDialog() {
+  private void openDialogInUiThread() {
     final IWorkbench workbench = PlatformUI.getWorkbench();
     workbench.getDisplay().asyncExec(new Runnable() {
       @Override
       public void run() {
         Shell shell = workbench.getActiveWorkbenchWindow().getShell();
-        new PostInstallSetupDialog(shell, new DialogCloseCallback()).open();
+        new PostInstallSetupDialog(shell).open();
       }
     });
-  }
-
-  private class DialogCloseCallback implements Runnable {
-    @Override
-    public void run() {
-      IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
-      preferences.putBoolean(PREFERENCE_KEY_SETUP_DONE, false);
-
-      try {
-        preferences.flush();
-      } catch (BackingStoreException ex) {
-        logger.log(Level.WARNING, "Failed to save preferecens.", ex);
-      }
-    }
   }
 }
