@@ -10,6 +10,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.cloud.tools.eclipse.preferences,
  com.google.cloud.tools.eclipse.preferences.areas,
+ org.eclipse.core.commands.common,
  org.eclipse.core.runtime.preferences;version="3.3.0",
  org.eclipse.jface.dialogs,
  org.eclipse.jface.layout,
@@ -18,4 +19,5 @@ Import-Package: com.google.cloud.tools.eclipse.preferences,
  org.eclipse.swt,
  org.eclipse.swt.widgets,
  org.eclipse.ui,
+ org.eclipse.ui.preferences,
  org.osgi.service.prefs;version="1.1.1"

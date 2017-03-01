@@ -17,21 +17,28 @@
 package com.google.cloud.tools.eclipse.postinstall;
 
 import com.google.cloud.tools.eclipse.preferences.AnalyticsOptInArea;
+import com.google.cloud.tools.eclipse.preferences.AnalyticsPreferences;
 import com.google.cloud.tools.eclipse.preferences.areas.PreferenceArea;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 public class PostInstallSetupDialog extends Dialog {
 
+  private static final Logger logger = Logger.getLogger(PostInstallSetupDialog.class.getName());
+
   private final Runnable closeCallback;
 
+  private final ScopedPreferenceStore analyticsPreferenceStore;
   private final PreferenceArea analyticsArea;
 
   public PostInstallSetupDialog(Shell parent, Runnable closeCallback) {
@@ -39,9 +46,12 @@ public class PostInstallSetupDialog extends Dialog {
     this.closeCallback = closeCallback;
 
     analyticsArea = new AnalyticsOptInArea();
-    IPreferenceStore analyticsPreferenceStore =
+    analyticsPreferenceStore = (ScopedPreferenceStore)
         com.google.cloud.tools.eclipse.preferences.Activator.getDefault().getPreferenceStore();
     analyticsArea.setPreferenceStore(analyticsPreferenceStore);
+
+    // TODO(chanseok): Remove the key itself, after we get rid of the on-the-fly opt-in dialog.
+    analyticsPreferenceStore.setValue(AnalyticsPreferences.ANALYTICS_OPT_IN_REGISTERED, true);
   }
 
   @Override
@@ -65,14 +75,31 @@ public class PostInstallSetupDialog extends Dialog {
 
   @Override
   protected void okPressed() {
-    analyticsArea.performApply();
+    analyticsArea.performApply();  // Do before dialog is disposed.
     super.okPressed();
+    doClosingTasks();
   }
 
   @Override
+  protected void cancelPressed() {
+    super.cancelPressed();
+    doClosingTasks();
+  }
+
+  /** When the dialog closes in other ways than pressing the buttons. */
+  @Override
   protected void handleShellCloseEvent() {
-    closeCallback.run();
-    analyticsArea.dispose();
     super.handleShellCloseEvent();
+    doClosingTasks();
+  }
+
+  private void doClosingTasks() {
+    try {
+      analyticsArea.dispose();
+      closeCallback.run();
+      analyticsPreferenceStore.save();
+    } catch (IOException ex) {
+      logger.log(Level.WARNING, "Failed to save preferences.", ex);
+    }
   }
 }
