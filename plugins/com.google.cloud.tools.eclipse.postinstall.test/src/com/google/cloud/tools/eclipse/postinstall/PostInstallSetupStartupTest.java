@@ -28,16 +28,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.osgi.service.prefs.BackingStoreException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostInstallSetupStartupTest {
+
+  private static final String PREFERENCE_KEY_TO_TEST =
+      "com.google.cloud.tools.eclipse.postinstall.setupDone";
 
   @Mock private IEclipsePreferences preferences;
   @Mock private Runnable dialogOpener;
 
   @Test
   public void testShowSetupDialogOnce_showIfNeverShown() {
-    mockPreferenceOnlyFor("com.google.cloud.tools.eclipse.postinstall.setupDone", false);
+    mockPreferenceOnlyFor(PREFERENCE_KEY_TO_TEST, false);
 
     new PostInstallSetupStartup().showSetupDialogOnce(preferences, dialogOpener);
     verify(dialogOpener, times(1)).run();
@@ -45,10 +49,19 @@ public class PostInstallSetupStartupTest {
 
   @Test
   public void testShowSetupDialogOnce_doNotShowIfEverShown() {
-    mockPreferenceOnlyFor("com.google.cloud.tools.eclipse.postinstall.setupDone", true);
+    mockPreferenceOnlyFor(PREFERENCE_KEY_TO_TEST, true);
 
     new PostInstallSetupStartup().showSetupDialogOnce(preferences, dialogOpener);
     verify(dialogOpener, never()).run();
+  }
+
+  @Test
+  public void testShowSetupDialogOnce_markShown() throws BackingStoreException {
+    mockPreferenceOnlyFor(PREFERENCE_KEY_TO_TEST, false);
+
+    new PostInstallSetupStartup().showSetupDialogOnce(preferences, dialogOpener);
+    verify(preferences, times(1)).putBoolean(PREFERENCE_KEY_TO_TEST, true);
+    verify(preferences, times(1)).flush();
   }
 
   private void mockPreferenceOnlyFor(String key, boolean value) {

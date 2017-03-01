@@ -52,8 +52,7 @@ public class PostInstallSetupStartup implements IStartup {
       boolean setupDone = preferences.getBoolean(PREFERENCE_KEY_SETUP_DONE, false);
       if (!setupDone) {
         dialogOpener.run();
-
-        preferences.putBoolean(PREFERENCE_KEY_SETUP_DONE, false);
+        preferences.putBoolean(PREFERENCE_KEY_SETUP_DONE, true);
         preferences.flush();
       }
     } catch (BackingStoreException ex) {
