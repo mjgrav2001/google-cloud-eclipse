@@ -16,12 +16,63 @@
 
 package com.google.cloud.tools.eclipse.postinstall;
 
-import org.eclipse.swt.widgets.Dialog;
+import com.google.cloud.tools.eclipse.preferences.AnalyticsOptInArea;
+import com.google.cloud.tools.eclipse.preferences.areas.PreferenceArea;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 public class PostInstallSetupDialog extends Dialog {
 
-  public PostInstallSetupDialog(Shell parent) {
+  private final Runnable closeCallback;
+
+  private final PreferenceArea analyticsArea;
+
+  public PostInstallSetupDialog(Shell parent, Runnable closeCallback) {
     super(parent);
+    this.closeCallback = closeCallback;
+
+    analyticsArea = new AnalyticsOptInArea();
+    IPreferenceStore analyticsPreferenceStore =
+        com.google.cloud.tools.eclipse.preferences.Activator.getDefault().getPreferenceStore();
+    analyticsArea.setPreferenceStore(analyticsPreferenceStore);
+  }
+
+  @Override
+  protected void configureShell(Shell shell) {
+    super.configureShell(shell);
+    shell.setText(Messages.getString("post.install.setup.dialog.title")); //$NON-NLS-1$
+  }
+
+  @Override
+  protected Control createDialogArea(Composite parent) {
+    Composite composite = (Composite) super.createDialogArea(parent);
+    new Label(composite, SWT.NONE).setText(Messages.getString("welcome.message")); //$NON-NLS-1$
+    Label separator = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
+    GridDataFactory.fillDefaults().applyTo(separator);
+
+    analyticsArea.createContents(composite);
+
+    GridLayoutFactory.swtDefaults().margins(10, 10).spacing(5, 10).generateLayout(composite);
+    return composite;
+  }
+
+  @Override
+  protected void okPressed() {
+    analyticsArea.performApply();
+    super.okPressed();
+  }
+
+  @Override
+  protected void handleShellCloseEvent() {
+    closeCallback.run();
+    analyticsArea.dispose();
+    super.handleShellCloseEvent();
   }
 }

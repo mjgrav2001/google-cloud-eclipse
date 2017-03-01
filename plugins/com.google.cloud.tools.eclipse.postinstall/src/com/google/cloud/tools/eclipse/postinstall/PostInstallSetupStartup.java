@@ -26,11 +26,13 @@ import org.eclipse.ui.PlatformUI;
 public class PostInstallSetupStartup implements IStartup {
 
   private static final String PLUGIN_ID = "com.google.cloud.tools.eclipse.postinstall";
+  private static final String PREFERENCE_KEY_SETUP_DONE =
+      "com.google.cloud.tools.eclipse.postinstall.setupDone";
 
   @Override
   public void earlyStartup() {
     IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
-    boolean setupDone = preferences.getBoolean("POST_INSTALL_SETUP_DONE", false);
+    boolean setupDone = preferences.getBoolean(PREFERENCE_KEY_SETUP_DONE, false);
     if (!setupDone) {
       showPostInstallSetupDialog();
     }
@@ -42,7 +44,16 @@ public class PostInstallSetupStartup implements IStartup {
       @Override
       public void run() {
         Shell shell = workbench.getActiveWorkbenchWindow().getShell();
+        new PostInstallSetupDialog(shell, new DialogCloseCallback()).open();
       }
     });
+  }
+
+  private class DialogCloseCallback implements Runnable {
+    @Override
+    public void run() {
+      IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
+      preferences.putBoolean(PREFERENCE_KEY_SETUP_DONE, false);
+    }
   }
 }
