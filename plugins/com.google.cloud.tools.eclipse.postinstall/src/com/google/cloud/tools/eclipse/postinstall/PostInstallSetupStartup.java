@@ -16,14 +16,19 @@
 
 package com.google.cloud.tools.eclipse.postinstall;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.service.prefs.BackingStoreException;
 
 public class PostInstallSetupStartup implements IStartup {
+
+  private static final Logger logger = Logger.getLogger(PostInstallSetupStartup.class.getName());
 
   private static final String PLUGIN_ID = "com.google.cloud.tools.eclipse.postinstall";
   private static final String PREFERENCE_KEY_SETUP_DONE =
@@ -54,6 +59,12 @@ public class PostInstallSetupStartup implements IStartup {
     public void run() {
       IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
       preferences.putBoolean(PREFERENCE_KEY_SETUP_DONE, false);
+
+      try {
+        preferences.flush();
+      } catch (BackingStoreException ex) {
+        logger.log(Level.WARNING, "Failed to save preferecens.", ex);
+      }
     }
   }
 }
