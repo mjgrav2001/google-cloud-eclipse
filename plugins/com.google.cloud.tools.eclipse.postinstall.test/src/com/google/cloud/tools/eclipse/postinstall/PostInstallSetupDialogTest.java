@@ -19,6 +19,11 @@ package com.google.cloud.tools.eclipse.postinstall;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.tools.eclipse.test.util.ui.ShellTestResource;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -29,28 +34,27 @@ import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.Result;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class PostInstallSetupDialogTest {
 
   @Rule public ShellTestResource shellResource = new ShellTestResource();
 
+  @Mock private ScopedPreferenceStore analyticsPreferenceStore;
+
   private final SWTBot bot = new SWTWorkbenchBot();
 
-  private final Runnable clickOk = new Runnable() {
-    @Override
-    public void run() {
-      bot.button("OK").click();
-    }
-  };
+  @Before
+  public void setUp() {
 
-  private final Runnable clickCancel = new Runnable() {
-    @Override
-    public void run() {
-      bot.button("Cancel").click();
-    }
-  };
+  }
 
   @Test
   public void testDialogArea() {
@@ -78,35 +82,44 @@ public class PostInstallSetupDialogTest {
   }
 
   @Test
-  public void testClickOk() throws InterruptedException {
-    openDialogAndDoAction(clickOk);
+  public void testClickOk() throws InterruptedException, ExecutionException, TimeoutException {
+    openDialogAndDoAction(new ClickOkAction());
   }
 
   @Test
-  public void testClickCancel() throws InterruptedException {
-    openDialogAndDoAction(clickCancel);
+  public void testClickCancel() throws InterruptedException, ExecutionException, TimeoutException {
+    openDialogAndDoAction(new ClickCancelAction());
   }
 
-  private void openDialogAndDoAction(final Runnable action)
-      throws InterruptedException {
-    Thread botThread = new Thread(new Runnable() {
+  private void openDialogAndDoAction(final Result<Boolean> action)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    FutureTask<Boolean> botThread = new FutureTask<>(new Callable<Boolean>() {
       @Override
-      public void run() {
+      public Boolean call() throws Exception {
         bot.waitUntil(Conditions.shellIsActive(
             "Google Cloud Tools for Eclipse Post-Install Setup"));
-        UIThreadRunnable.syncExec(new Result<Boolean>() {
-          @Override
-          public Boolean run() {
-            action.run();
-            return null;
-          }
-        });
+        return UIThreadRunnable.syncExec(action);
       }
     });
-    botThread.start();
+    botThread.run();
 
-    PostInstallSetupDialog dialog = new PostInstallSetupDialog(shellResource.getShell());
-    dialog.open();
-    botThread.join();
+    new PostInstallSetupDialog(shellResource.getShell(), analyticsPreferenceStore).open();
+    botThread.get(30, TimeUnit.SECONDS);
   }
+
+  private class ClickOkAction implements Result<Boolean> {
+    @Override
+    public Boolean run() {
+      bot.button("OK").click();
+      return true;
+    }
+  };
+
+  private class ClickCancelAction implements Result<Boolean> {
+    @Override
+    public Boolean run() {
+      bot.button("Cancel").click();
+      return true;
+    }
+  };
 }

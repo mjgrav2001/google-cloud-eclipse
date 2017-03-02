@@ -19,12 +19,14 @@ package com.google.cloud.tools.eclipse.postinstall;
 import com.google.cloud.tools.eclipse.preferences.AnalyticsOptInArea;
 import com.google.cloud.tools.eclipse.preferences.AnalyticsPreferences;
 import com.google.cloud.tools.eclipse.preferences.areas.PreferenceArea;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -40,12 +42,17 @@ public class PostInstallSetupDialog extends Dialog {
   private final PreferenceArea analyticsArea;
 
   public PostInstallSetupDialog(Shell parent) {
+    this(parent,
+        com.google.cloud.tools.eclipse.preferences.Activator.getDefault().getPreferenceStore());
+  }
+
+  @VisibleForTesting
+  PostInstallSetupDialog(Shell parent, IPreferenceStore analyticsPreferenceStore) {
     super(parent);
 
     analyticsArea = new AnalyticsOptInArea();
-    analyticsPreferenceStore = (ScopedPreferenceStore)
-        com.google.cloud.tools.eclipse.preferences.Activator.getDefault().getPreferenceStore();
     analyticsArea.setPreferenceStore(analyticsPreferenceStore);
+    this.analyticsPreferenceStore = (ScopedPreferenceStore) analyticsPreferenceStore;
   }
 
   @Override
