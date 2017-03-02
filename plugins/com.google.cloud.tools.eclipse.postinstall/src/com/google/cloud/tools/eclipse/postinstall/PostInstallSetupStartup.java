@@ -19,6 +19,7 @@ package com.google.cloud.tools.eclipse.postinstall;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.widgets.Shell;
@@ -37,7 +38,9 @@ public class PostInstallSetupStartup implements IStartup {
 
   @Override
   public void earlyStartup() {
-    if (true) return;
+    if (Platform.inDevelopmentMode()) {
+      return;
+    }
 
     IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
     showSetupDialogOnce(preferences, new Runnable() {
