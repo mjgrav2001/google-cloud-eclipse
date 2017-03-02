@@ -37,6 +37,8 @@ public class PostInstallSetupStartup implements IStartup {
 
   @Override
   public void earlyStartup() {
+    if (true) return;
+
     IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID);
     showSetupDialogOnce(preferences, new Runnable() {
       @Override

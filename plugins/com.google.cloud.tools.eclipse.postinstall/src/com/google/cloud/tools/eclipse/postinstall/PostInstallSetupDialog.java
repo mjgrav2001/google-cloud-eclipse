@@ -46,9 +46,6 @@ public class PostInstallSetupDialog extends Dialog {
     analyticsPreferenceStore = (ScopedPreferenceStore)
         com.google.cloud.tools.eclipse.preferences.Activator.getDefault().getPreferenceStore();
     analyticsArea.setPreferenceStore(analyticsPreferenceStore);
-
-    // TODO(chanseok): Remove the key itself, after we get rid of the on-the-fly opt-in dialog.
-    analyticsPreferenceStore.setValue(AnalyticsPreferences.ANALYTICS_OPT_IN_REGISTERED, true);
   }
 
   @Override
@@ -92,6 +89,9 @@ public class PostInstallSetupDialog extends Dialog {
 
   private void savePreferences() {
     try {
+      // TODO(chanseok): remove the key itself, after we get rid of the on-the-fly opt-in dialog.
+      analyticsPreferenceStore.setValue(AnalyticsPreferences.ANALYTICS_OPT_IN_REGISTERED, true);
+
       analyticsPreferenceStore.save();
     } catch (IOException ex) {
       logger.log(Level.WARNING, "Failed to save preferences.", ex);
