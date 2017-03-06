@@ -8,6 +8,8 @@
             class="com.google.cloud.tools.eclipse.appengine.newproject.maven.MavenArchetypeProjectWizard"
             icon="platform:/plugin/com.google.cloud.tools.eclipse.appengine.ui/icons/gae-16x16.png"
             project="true"
+            finalPerspective="org.eclipse.jst.j2ee.J2EEPerspective"
+            preferredPerspectives="org.eclipse.jst.j2ee.J2EEPerspective,org.eclipse.wst.web.ui.webDevPerspective"
             category="com.google.cloud.tools.eclipse.appengine.wizards">
          <description>%mavenwizard.description</description>
          <selection class="org.eclipse.core.resources.IResource"/>

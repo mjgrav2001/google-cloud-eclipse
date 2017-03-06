@@ -47,6 +47,9 @@ public class BaseProjectTest {
     } catch (WidgetNotFoundException ex) {
       // may receive WNFE: "There is no active view"
     }
+
+    // switch to J2EE to avoid new-project switch-perspective prompts
+    bot.perspectiveById("org.eclipse.jst.j2ee.J2EEPerspective").activate();
   }
 
   @After

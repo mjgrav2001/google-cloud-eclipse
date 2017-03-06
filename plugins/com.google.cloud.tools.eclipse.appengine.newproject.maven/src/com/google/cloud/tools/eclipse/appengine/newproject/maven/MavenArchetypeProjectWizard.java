@@ -30,8 +30,10 @@ import com.google.cloud.tools.eclipse.usagetracker.AnalyticsPingManager;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,12 +42,15 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
-public class MavenArchetypeProjectWizard extends Wizard implements INewWizard {
+public class MavenArchetypeProjectWizard extends Wizard
+    implements INewWizard, IExecutableExtension {
   private MavenAppEngineStandardWizardPage page;
   private MavenAppEngineStandardArchetypeWizardPage archetypePage;
   private File cloudSdkLocation;
   private IWorkbench workbench;
+  private IConfigurationElement configElement;
 
   public MavenArchetypeProjectWizard() {
     setWindowTitle(Messages.getString("WIZARD_TITLE")); //$NON-NLS-1$
@@ -112,8 +117,12 @@ public class MavenArchetypeProjectWizard extends Wizard implements INewWizard {
       boolean cancelable = true;
       getContainer().run(fork, cancelable, runnable);
       
+      // prompt to switch to preferred perspective
+      BasicNewProjectResourceWizard.updatePerspective(configElement);
+
       // open most important file created by wizard in editor
       IFile file = operation.getMostImportant();
+      BasicNewProjectResourceWizard.selectAndReveal(file, workbench.getActiveWorkbenchWindow());
       WorkbenchUtil.openInEditor(workbench, file);
       
     } catch (InterruptedException ex) {
@@ -134,6 +143,12 @@ public class MavenArchetypeProjectWizard extends Wizard implements INewWizard {
       cloudSdkLocation = CloudSdkPrompter.getCloudSdkLocation(getShell());
       // if the user doesn't provide the Cloud SDK then we'll error in performFinish() too
     }
+  }
+
+  @Override
+  public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
+      throws CoreException {
+    this.configElement = config;
   }
 
 }

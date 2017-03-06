@@ -3,12 +3,14 @@
 <plugin>
   <extension point="org.eclipse.ui.newWizards">
      <wizard
-            id="com.google.cloud.tools.eclipse.appengine.newproject.AppEngineStandard"
-            name="%wizard.name"
-            class="com.google.cloud.tools.eclipse.util.service.ServiceContextFactory:com.google.cloud.tools.eclipse.appengine.newproject.standard.AppEngineStandardProjectWizard"
-            icon="platform:/plugin/com.google.cloud.tools.eclipse.appengine.ui/icons/gae-16x16.png"
-            project="true"
-            category="com.google.cloud.tools.eclipse.appengine.wizards">
+           category="com.google.cloud.tools.eclipse.appengine.wizards"
+           icon="platform:/plugin/com.google.cloud.tools.eclipse.appengine.ui/icons/gae-16x16.png"
+           id="com.google.cloud.tools.eclipse.appengine.newproject.AppEngineStandard"
+           name="%wizard.name"
+           class="com.google.cloud.tools.eclipse.util.service.ServiceContextFactory:com.google.cloud.tools.eclipse.appengine.newproject.standard.AppEngineStandardProjectWizard"
+           finalPerspective="org.eclipse.jst.j2ee.J2EEPerspective"
+           preferredPerspectives="org.eclipse.jst.j2ee.J2EEPerspective,org.eclipse.wst.web.ui.webDevPerspective"
+           project="true">
          <description>%wizard.description</description>
          <selection class="org.eclipse.core.resources.IResource"/>
          <keywordReference id="com.google.cloud.tools.eclipse.appengine.ui.GCPKeyword"/>
