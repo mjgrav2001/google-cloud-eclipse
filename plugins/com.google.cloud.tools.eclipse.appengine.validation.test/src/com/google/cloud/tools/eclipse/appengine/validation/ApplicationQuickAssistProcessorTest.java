@@ -18,6 +18,9 @@ package com.google.cloud.tools.eclipse.appengine.validation;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.cloud.tools.eclipse.swtbot.SwtBotWorkbenchActions;
+import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -27,18 +30,22 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.TextInvocationContext;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
-import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 
 public class ApplicationQuickAssistProcessorTest {
   
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator();
   
+  @After
+  public void tearDown() {
+    SwtBotWorkbenchActions.resetWorkbench(new SWTWorkbenchBot());
+  }
+
   @Test
   public void testComputeQuickAssistProposals() throws CoreException {
     

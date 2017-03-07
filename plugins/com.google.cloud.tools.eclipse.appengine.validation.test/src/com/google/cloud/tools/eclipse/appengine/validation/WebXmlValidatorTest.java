@@ -18,6 +18,7 @@ package com.google.cloud.tools.eclipse.appengine.validation;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +36,6 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 
 public class WebXmlValidatorTest {
 

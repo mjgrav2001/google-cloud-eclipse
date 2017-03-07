@@ -20,26 +20,27 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.google.cloud.tools.eclipse.swtbot.SwtBotWorkbenchActions;
+import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
-import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
-import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 
 /**
  * Must be run as a plugin test.
@@ -53,6 +54,11 @@ public class XsltQuickFixTest {
       + "</appengine-web-app>";
     
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator();
+
+  @After
+  public void tearDown() {
+    SwtBotWorkbenchActions.resetWorkbench(new SWTWorkbenchBot());
+  }
 
   private XsltQuickFix fix = new XsltQuickFix("/xslt/application.xsl",
       Messages.getString("remove.application.element"));

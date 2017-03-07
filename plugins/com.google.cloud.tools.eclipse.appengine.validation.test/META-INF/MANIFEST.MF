@@ -11,11 +11,13 @@ Require-Bundle: org.junit,
  org.eclipse.equinox.registry,
  com.google.cloud.tools.eclipse.test.dependencies
 Import-Package: com.google.cloud.tools.eclipse.appengine.compat,
+ com.google.cloud.tools.eclipse.swtbot,
  com.google.cloud.tools.eclipse.test.util,
  com.google.cloud.tools.eclipse.test.util.project,
  com.google.cloud.tools.eclipse.ui.util,
  org.eclipse.core.resources,
  org.eclipse.jface.text,
  org.eclipse.jface.text.contentassist,
+ org.eclipse.swtbot.eclipse.finder,
  org.eclipse.ui,
  org.mockito;provider=google

@@ -19,18 +19,20 @@ package com.google.cloud.tools.eclipse.appengine.validation;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.tools.eclipse.swtbot.SwtBotWorkbenchActions;
+import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
-import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 
 public class XsltSourceQuickFixTest {
   
@@ -42,6 +44,11 @@ public class XsltSourceQuickFixTest {
   
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator();
   
+  @After
+  public void tearDown() {
+    SwtBotWorkbenchActions.resetWorkbench(new SWTWorkbenchBot());
+  }
+
   @Test
   public void testApply() throws CoreException {
     

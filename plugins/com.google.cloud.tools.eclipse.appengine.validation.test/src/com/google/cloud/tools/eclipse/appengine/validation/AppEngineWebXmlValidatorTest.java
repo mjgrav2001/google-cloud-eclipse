@@ -18,6 +18,8 @@ package com.google.cloud.tools.eclipse.appengine.validation;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.cloud.tools.eclipse.swtbot.SwtBotWorkbenchActions;
+import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,11 +33,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 
 public class AppEngineWebXmlValidatorTest {
 
@@ -64,6 +66,7 @@ public class AppEngineWebXmlValidatorTest {
     if (resource != null) {
       resource.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
     }
+    SwtBotWorkbenchActions.resetWorkbench(new SWTWorkbenchBot());
   }
   
   @Test

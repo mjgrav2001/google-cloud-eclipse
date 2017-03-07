@@ -18,6 +18,8 @@ package com.google.cloud.tools.eclipse.appengine.validation;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.cloud.tools.eclipse.swtbot.SwtBotWorkbenchActions;
+import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,14 +32,14 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
-
-import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 
 /**
  * Must be run as a plugin test.
@@ -47,6 +49,11 @@ public class ToServlet25QuickFixTest {
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator();
 
   private ToServlet25QuickFix fix = new ToServlet25QuickFix();
+
+  @After
+  public void tearDown() {
+    SwtBotWorkbenchActions.resetWorkbench(new SWTWorkbenchBot());
+  }
 
   @Test 
   public void testGetLabel() {
