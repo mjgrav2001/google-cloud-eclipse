@@ -190,7 +190,10 @@ public class ProjectUtils {
       do {
         delayTactic.run();
         for (Job job : jobs) {
-          job.join();
+          // Do not join SLEEPING jobs as they may not run for a long time
+          if (job.getState() == Job.RUNNING || job.getState() == Job.WAITING) {
+            job.join();
+          }
         }
         jobs.clear();
 

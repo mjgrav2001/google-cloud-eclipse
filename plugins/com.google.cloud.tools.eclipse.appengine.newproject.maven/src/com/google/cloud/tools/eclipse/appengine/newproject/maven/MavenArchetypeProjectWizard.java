@@ -27,6 +27,7 @@ import com.google.cloud.tools.eclipse.sdk.ui.preferences.CloudSdkPrompter;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsEvents;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsPingManager;
+import com.google.cloud.tools.eclipse.util.service.ServiceContextFactory;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -48,8 +49,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
  * <p>
  * Expected to be created via the {@link ServiceContextFactory}.
  */
-public class MavenArchetypeProjectWizard extends Wizard
-    implements INewWizard {
+public class MavenArchetypeProjectWizard extends Wizard implements INewWizard {
   private MavenAppEngineStandardWizardPage page;
   private MavenAppEngineStandardArchetypeWizardPage archetypePage;
   private File cloudSdkLocation;
