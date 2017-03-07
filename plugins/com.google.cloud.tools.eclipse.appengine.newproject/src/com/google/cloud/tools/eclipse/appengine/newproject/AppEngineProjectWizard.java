@@ -43,7 +43,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
-/** Expected to be created via the {@link ServiceContextFactory}. */
+/**
+ * Base class for App Engine projection creation.
+ * <p>
+ * Expected to be created via the {@link ServiceContextFactory}.
+ */
 public abstract class AppEngineProjectWizard extends Wizard implements INewWizard {
 
   private AppEngineWizardPage page = null;

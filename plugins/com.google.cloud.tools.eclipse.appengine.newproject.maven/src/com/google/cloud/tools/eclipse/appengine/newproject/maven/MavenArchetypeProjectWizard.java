@@ -30,10 +30,9 @@ import com.google.cloud.tools.eclipse.usagetracker.AnalyticsPingManager;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import javax.inject.Inject;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -44,12 +43,19 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
+/**
+ * Creates a new Maven-based App Engine Standard project using an archetype.
+ * <p>
+ * Expected to be created via the {@link ServiceContextFactory}.
+ */
 public class MavenArchetypeProjectWizard extends Wizard
-    implements INewWizard, IExecutableExtension {
+    implements INewWizard {
   private MavenAppEngineStandardWizardPage page;
   private MavenAppEngineStandardArchetypeWizardPage archetypePage;
   private File cloudSdkLocation;
   private IWorkbench workbench;
+
+  @Inject
   private IConfigurationElement configElement;
 
   public MavenArchetypeProjectWizard() {
@@ -144,11 +150,4 @@ public class MavenArchetypeProjectWizard extends Wizard
       // if the user doesn't provide the Cloud SDK then we'll error in performFinish() too
     }
   }
-
-  @Override
-  public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
-      throws CoreException {
-    this.configElement = config;
-  }
-
 }

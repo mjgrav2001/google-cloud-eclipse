@@ -5,7 +5,7 @@
       <wizard
             id="com.google.cloud.tools.eclipse.appengine.newproject.MavenAppEngineStandard"
             name="%mavenwizard.name"
-            class="com.google.cloud.tools.eclipse.appengine.newproject.maven.MavenArchetypeProjectWizard"
+            class="com.google.cloud.tools.eclipse.util.service.ServiceContextFactory:com.google.cloud.tools.eclipse.appengine.newproject.maven.MavenArchetypeProjectWizard"
             icon="platform:/plugin/com.google.cloud.tools.eclipse.appengine.ui/icons/gae-16x16.png"
             project="true"
             finalPerspective="org.eclipse.jst.j2ee.J2EEPerspective"

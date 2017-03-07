@@ -21,24 +21,22 @@ public class ServiceContextFactory implements IExecutableExtensionFactory, IExec
   @Override
   public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
       throws CoreException {
-      if (data == null || !(data instanceof String)) {
-        throw new CoreException(StatusUtil.error(getClass(), "Data must be a class name"));
-      }
+    if (data == null || !(data instanceof String)) {
+      throw new CoreException(StatusUtil.error(getClass(), "Data must be a class name"));
+    }
     configElement = config;
-      String className = (String) data;
-      String bundleSymbolicName = config.getNamespaceIdentifier();
-      Bundle bundle = Platform.getBundle(bundleSymbolicName);
-      if (bundle == null) {
-        throw new CoreException(StatusUtil.error(this, "Missing bundle " + bundleSymbolicName));
-      }
-      try {
-        clazz = bundle.loadClass(className);
-      } catch (ClassNotFoundException ex) {
-        throw new CoreException(StatusUtil.error(this,
-                                                 "Could not load class " + className
-                                                 + " from bundle " + bundle.getSymbolicName(),
-                                                 ex));
-      }
+    String className = (String) data;
+    String bundleSymbolicName = config.getNamespaceIdentifier();
+    Bundle bundle = Platform.getBundle(bundleSymbolicName);
+    if (bundle == null) {
+      throw new CoreException(StatusUtil.error(this, "Missing bundle " + bundleSymbolicName));
+    }
+    try {
+      clazz = bundle.loadClass(className);
+    } catch (ClassNotFoundException ex) {
+      throw new CoreException(StatusUtil.error(this,
+          "Could not load class " + className + " from bundle " + bundle.getSymbolicName(), ex));
+    }
   }
 
   @Override
