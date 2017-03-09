@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google Inc.
+* Copyright 2017 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.appengine.validation;
+package com.google.cloud.tools.eclipse.ui.util.images;
 
-/**
- * Provides quick assists for appengine-web.xml in the source editor.
- */
-public class ApplicationQuickAssistProcessor extends AbstractQuickAssistProcessor {
+import static org.junit.Assert.assertNotNull;
 
-  public ApplicationQuickAssistProcessor() {
-    super(Messages.getString("application.element"), new ApplicationSourceQuickFix());
+import com.google.cloud.tools.eclipse.test.util.ui.ShellTestResource;
+import org.junit.Rule;
+import org.junit.Test;
+
+public class SharedImagesTest {
+
+  @Rule public ShellTestResource shell = new ShellTestResource();
+
+  @Test
+  public void testCreateRefreshIcon() {
+    assertNotNull(SharedImages.createRefreshIcon(shell.getDisplay()));
   }
 
 }
