@@ -27,7 +27,6 @@ import com.google.cloud.tools.eclipse.projectselector.ProjectSelector;
 import com.google.cloud.tools.eclipse.projectselector.model.GcpProject;
 import com.google.cloud.tools.eclipse.ui.util.FontUtil;
 import com.google.cloud.tools.eclipse.ui.util.databinding.BucketNameValidator;
-import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectSelectorValidator;
 import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectVersionValidator;
 import com.google.cloud.tools.eclipse.ui.util.event.OpenUriSelectionListener;
 import com.google.cloud.tools.eclipse.ui.util.event.OpenUriSelectionListener.ErrorDialogErrorHandler;
@@ -36,6 +35,7 @@ import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -51,7 +51,6 @@ import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.ComputedValue;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
-import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IProject;
@@ -156,7 +155,7 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
     bindingContext = new DataBindingContext();
 
     setupAccountEmailDataBinding(bindingContext);
-    setupProjectIdDataBinding(bindingContext);
+    setupProjectSelectorDataBinding(bindingContext);
     setupProjectVersionDataBinding(bindingContext);
     setupAutoPromoteDataBinding(bindingContext);
     setupBucketDataBinding(bindingContext);
@@ -198,7 +197,14 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
         accountSelectorObservableValue));
   }
 
-  private void setupProjectIdDataBinding(DataBindingContext context) {
+  private void setupProjectSelectorDataBinding(DataBindingContext context) {
+    IViewerObservableValue projectInput =
+        ViewerProperties.input().observe(projectSelector.getViewer());
+    IViewerObservableValue projectSelection =
+        ViewerProperties.singleSelection().observe(projectSelector.getViewer());
+    context.addValidationStatusProvider(
+        new ProjectSelectionValidator(projectInput, projectSelection, requireValues));
+
     IViewerObservableValue projectList =
         ViewerProperties.singleSelection().observe(projectSelector.getViewer());
     IObservableValue projectIdModel = PojoProperties.value("projectId").observe(model);
@@ -207,11 +213,6 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
         new UpdateValueStrategy().setConverter(new GcpProjectToProjectIdConverter());
     UpdateValueStrategy projectIdToGcpProject =
         new UpdateValueStrategy().setConverter(new ProjectIdToGcpProjectConverter());
-    if (requireValues) {
-      IValidator validator = new ProjectSelectorValidator();
-      gcpProjectToProjectId.setAfterConvertValidator(validator);
-      projectIdToGcpProject.setAfterGetValidator(validator);
-    }
 
     context.bindValue(projectList, projectIdModel, gcpProjectToProjectId, projectIdToGcpProject);
   }
@@ -520,6 +521,42 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
       Preconditions.checkArgument(fromObject instanceof GcpProject);
       return ((GcpProject) fromObject).getId();
+    }
+  }
+
+  static class ProjectSelectionValidator extends FixedMultiValidator {
+
+    private final IViewerObservableValue projectInput;
+    private final IViewerObservableValue projectSelection;
+    private final boolean requireValues;
+
+    private ProjectSelectionValidator(IViewerObservableValue projectInput,
+                                      IViewerObservableValue projectSelection,
+                                      boolean requireValues) {
+      this.projectInput = projectInput;
+      this.projectSelection = projectSelection;
+      this.requireValues = requireValues;
+    }
+
+    @Override
+    protected IStatus validate() {
+      // this access is recorded and ensures that changes are tracked, don't move it inside the if
+      Collection<?> projects = (Collection<?>) projectInput.getValue();
+      // this access is recorded and ensures that changes are tracked, don't move it inside the if
+      Object selectedProject = projectSelection.getValue();
+      if (projects.isEmpty()) {
+        if (requireValues) {
+          return ValidationStatus.error(Messages.getString("projectselector.no.projects")); //$NON-NLS-1$
+        } else {
+          return ValidationStatus.info(Messages.getString("projectselector.no.projects")); //$NON-NLS-1$
+        }
+      }
+      if (requireValues) {
+        if (selectedProject == null) {
+          return ValidationStatus.error(Messages.getString("projectselector.project.not.selected")); //$NON-NLS-1$
+        }
+      }
+      return ValidationStatus.ok();
     }
   }
 

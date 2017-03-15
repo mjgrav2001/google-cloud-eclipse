@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.appengine.libraries;
+package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,18 +24,21 @@ import java.util.logging.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.RegistryFactory;
 
-import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
-import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFactory;
-import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFactoryException;
 import com.google.common.collect.ImmutableMap;
 
-public class AppEngineLibraries {
+public class CloudLibraries {
 
   /**
    * Library files for App Engine Standard environment applications; specifically
    * Objectify, App Engine API, and Google Cloud Endpoints.
    */
-  public static final String APP_ENGINE_GROUP = "appengine";
+  public static final String APP_ENGINE_GROUP = "appengine";   //$NON-NLS-1$
+  
+  /**
+   * Library files for Google Client APIs for Java; specifically
+   * google-api-client, oAuth, and google-http-client.
+   */
+  public static final String CLIENT_APIS_GROUP = "clientapis"; //$NON-NLS-1$
   
   /**
    * Library files for all Java servlet applications; specifically
@@ -43,7 +46,7 @@ public class AppEngineLibraries {
    */
   public static final String SERVLET_GROUP = "servlet";
   
-  private static final Logger logger = Logger.getLogger(AppEngineLibraries.class.getName());
+  private static final Logger logger = Logger.getLogger(CloudLibraries.class.getName());
   private static final ImmutableMap<String, Library> libraries = loadLibraryDefinitions();
   
   // todo consider caching maps of group to libraries

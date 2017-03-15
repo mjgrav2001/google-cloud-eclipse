@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.ui.util.databinding;
+package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
-import static org.junit.Assert.assertEquals;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
 
-import org.eclipse.core.runtime.IStatus;
-import org.junit.Test;
+public class ApiClientLibrariesPage extends CloudLibrariesPage {
 
-public class ProjectSelectorValidatorTest {
-
-  @Test
-  public void testValidate_nullString() {
-    assertEquals(IStatus.ERROR, new ProjectSelectorValidator().validate(null).getSeverity());
+  public ApiClientLibrariesPage() {
+    super(CloudLibraries.CLIENT_APIS_GROUP);
   }
 
-  @Test
-  public void testValidate_emptyString() {
-    assertEquals(IStatus.ERROR, new ProjectSelectorValidator().validate("").getSeverity());
-  }
 }
