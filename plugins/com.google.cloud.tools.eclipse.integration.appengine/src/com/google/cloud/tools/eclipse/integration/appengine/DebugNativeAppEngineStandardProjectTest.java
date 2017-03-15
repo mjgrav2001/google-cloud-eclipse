@@ -48,6 +48,12 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -118,6 +124,11 @@ public class DebugNativeAppEngineStandardProjectTest extends BaseProjectTest {
 
     System.out.printf("---- Dev App Server ----\n%s\n------------------\n",
         consoleContents.getText());
+
+    listFiles(project.getLocation().toFile().toPath());
+    listFiles(Paths.get(
+        "/home/travis/build/GoogleCloudPlatform/google-cloud-eclipse/plugins/com.google.cloud.tools.eclipse.integration.appengine/target/work/data/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/testapp"));
+
     assertEquals("Hello App Engine!",
         getUrlContents(new URL("http://localhost:8080/hello"), (int) SWTBotPreferences.TIMEOUT));
 
@@ -135,6 +146,24 @@ public class DebugNativeAppEngineStandardProjectTest extends BaseProjectTest {
     assertTrue("App Engine console should mark as stopped",
         consoleView.getViewReference().getContentDescription().startsWith("<stopped>"));
     assertFalse("Stop Server button should be disabled", stopServerButton.isEnabled());
+  }
+
+  /**
+   * @param path
+   */
+  private void listFiles(Path path) {
+    try {
+      System.out.println(">> files in " + path);
+      Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+          System.out.println(">> " + file);
+          return FileVisitResult.CONTINUE;
+        }
+      });
+    } catch (IOException ex) {
+      System.err.println("Error while listing files in " + path + ": " + ex);
+    }
   }
 
   /**
