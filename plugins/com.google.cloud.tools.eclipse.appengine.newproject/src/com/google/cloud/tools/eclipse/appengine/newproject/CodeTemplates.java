@@ -138,6 +138,8 @@ public class CodeTemplates {
 
     copyChildFile("favicon.ico", webapp, subMonitor.newChild(5));
 
+    project.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.newChild(5));
+
     return hello;
   }
 
