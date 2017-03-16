@@ -27,7 +27,16 @@ import com.google.cloud.tools.eclipse.swtbot.SwtBotProjectActions;
 import com.google.cloud.tools.eclipse.swtbot.SwtBotTestingUtilities;
 import com.google.cloud.tools.eclipse.swtbot.SwtBotTreeUtilities;
 import com.google.cloud.tools.eclipse.test.util.ThreadDumpingWatchdog;
+import com.google.common.base.Strings;
+import com.google.common.io.CharStreams;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Tree;
@@ -125,9 +134,14 @@ public class DebugNativeAppEngineStandardProjectTest extends BaseProjectTest {
     System.out.printf("---- Dev App Server ----\n%s\n------------------\n",
         consoleContents.getText());
 
+    listFiles(project);
     listFiles(project.getLocation().toFile().toPath());
-    listFiles(Paths.get(
-        "/home/travis/build/GoogleCloudPlatform/google-cloud-eclipse/plugins/com.google.cloud.tools.eclipse.integration.appengine/target/work/data/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/testapp"));
+    printFileContents(project, ".project");
+    printFileContents(project, ".classpath");
+
+    Path workspacePath = project.getWorkspace().getRoot().getLocation().toFile().toPath();
+    Path testAppPath = workspacePath.resolve(".metadata/.plugins/org.eclipse.wst.server.core/tmp0/testapp");
+    listFiles(testAppPath);
 
     assertEquals("Hello App Engine!",
         getUrlContents(new URL("http://localhost:8080/hello"), (int) SWTBotPreferences.TIMEOUT));
@@ -148,21 +162,53 @@ public class DebugNativeAppEngineStandardProjectTest extends BaseProjectTest {
     assertFalse("Stop Server button should be disabled", stopServerButton.isEnabled());
   }
 
-  /**
-   * @param path
-   */
-  private void listFiles(Path path) {
+  private void listFiles(final Path path) {
     try {
-      System.out.println(">> files in " + path);
+      System.out.println("> files in " + path);
       Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-          System.out.println(">> " + file);
+          System.out.println("   " + path.relativize(file));
           return FileVisitResult.CONTINUE;
         }
       });
     } catch (IOException ex) {
       System.err.println("Error while listing files in " + path + ": " + ex);
+    }
+  }
+
+  private void listFiles(IContainer container) {
+    try {
+      IResourceVisitor fileVisitor = new IResourceVisitor() {
+        @Override
+        public boolean visit(IResource resource) throws CoreException {
+          if (resource.getType() == IResource.FILE) {
+            System.out.println("   " + resource);
+          }
+          return true;
+        }
+      };
+      System.out.println("> files in " + container);
+      container.accept(fileVisitor);
+    } catch (CoreException ex) {
+      System.err.println("Error while listing files in " + container + ": " + ex);
+    }
+  }
+
+  private void printFileContents(IContainer container, String path) {
+    IResource resource = container.findMember(path);
+    if (!resource.exists()) {
+      System.err.println("--- Path does not exist: " + path);
+    } else if (resource.getType() != IResource.FILE) {
+      System.err.println("--- Path is not a file: " + path);
+    } else {
+      try {
+        String contents = CharStreams.toString(
+            new InputStreamReader(((IFile) resource).getContents(), StandardCharsets.UTF_8));
+        System.out.printf("---- Contents of %s  ----\n%s\n----------------\n", path, contents);
+      } catch (Exception ex) {
+        System.err.println("--- Exception accesing file: " + path + ": " + ex);
+      }
     }
   }
 
