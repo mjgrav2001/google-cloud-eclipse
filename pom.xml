@@ -342,6 +342,10 @@
           <artifactId>tycho-surefire-plugin</artifactId>
           <version>${tycho.version}</version>
           <configuration>
+
+            <includes>**/integration/appengine/*.java</includes>
+            <failIfNoTests>false</failIfNoTests>
+
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
             <argLine>${jacoco.agentArgLine} -Dorg.eclipse.swtbot.search.timeout=${org.eclipse.swtbot.search.timeout} -Xms40m -Xmx1G -XX:MaxPermSize=512m -Djava.awt.headless=true ${os-jvm-flags}</argLine>
           </configuration>
