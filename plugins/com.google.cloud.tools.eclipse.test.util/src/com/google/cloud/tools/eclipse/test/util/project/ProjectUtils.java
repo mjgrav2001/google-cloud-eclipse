@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -206,10 +207,8 @@ public class ProjectUtils {
         // wait a little bit to give the builders a chance
         delayTactic.run();
 
-        // wait for any previously-identified build jobs
-        for (Job job : jobs) {
-          job.join();
-        }
+        // NB: don't join jobs: see #1529
+        // for details: https://github.com/GoogleCloudPlatform/google-cloud-eclipse/pull/1529
 
         // identify any pending build-related jobs
         jobs = findPendingBuildJobs(projects);
@@ -232,7 +231,7 @@ public class ProjectUtils {
           dumpJobsState();
         }
       } while (!jobs.isEmpty() || buildErrorsChanging);
-    } catch (CoreException | InterruptedException ex) {
+    } catch (CoreException ex) {
       throw new RuntimeException(ex);
     }
   }
@@ -266,8 +265,8 @@ public class ProjectUtils {
       }
       Object blockingJob = null;
       try {
-        blockingJob =
-            ReflectionUtil.invoke(Job.getJobManager(), "findBlockingJob", InternalJob.class, job);
+        blockingJob = ReflectionUtil.invoke(Job.getJobManager(), "findBlockingJob",
+            new Class<?>[] {InternalJob.class}, InternalJob.class, job);
       } catch (Exception ex) {
         System.err.println("Unable to fetch blocking-job: " + ex);
       }
@@ -293,6 +292,13 @@ public class ProjectUtils {
     for (IProject project : projects) {
       Collections.addAll(jobs, jobManager.find(
           project.getName() + ValidatorManager.VALIDATOR_JOB_FAMILY));
+    }
+    // remove sleeping jobs
+    for (Iterator<Job> iter = jobs.iterator(); iter.hasNext();) {
+      Job job = iter.next();
+      if (job.getState() == Job.SLEEPING) {
+        iter.remove();
+      }
     }
     return jobs;
   }
