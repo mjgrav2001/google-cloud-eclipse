@@ -19,6 +19,7 @@ package com.google.cloud.tools.eclipse.test.util.project;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.tools.eclipse.test.util.reflection.ReflectionUtil;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import java.io.File;
@@ -35,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.eclipse.core.internal.jobs.InternalJob;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -227,17 +229,52 @@ public class ProjectUtils {
                 timer, currentBuildErrors.size());
           }
           // Uncomment if tests are failing to identify any other build-related jobs.
-          Job[] otherJobs = Job.getJobManager().find(null);
-          if (otherJobs.length > 0) {
-          System.err.printf("Ignoring %d unrelated jobs:\n", otherJobs.length);
-          for (Job job : otherJobs) {
-          System.err.printf(" %s: %s\n", job.getClass().getName(), job);
-          }
-          }
+          dumpJobsState();
         }
       } while (!jobs.isEmpty() || buildErrorsChanging);
     } catch (CoreException | InterruptedException ex) {
       throw new RuntimeException(ex);
+    }
+  }
+
+  private static void dumpJobsState() {
+    Job[] otherJobs = Job.getJobManager().find(null);
+    if (otherJobs.length == 0) {
+      System.err.printf("ProjectUtils#dumpJobsState: no jobs\n");
+      return;
+    }
+
+    System.err.printf("ProjectUtils#dumpJobsState: %d jobs:\n", otherJobs.length);
+    for (Job job : otherJobs) {
+      String status;
+      switch (job.getState()) {
+        case Job.RUNNING:
+          status = "RUNNING";
+          break;
+        case Job.WAITING:
+          status = "WAITING";
+          break;
+        case Job.SLEEPING:
+          status = "SLEEPING";
+          break;
+        case Job.NONE:
+          status = "NONE";
+          break;
+        default:
+          status = "UNKNOWN(" + job.getState() + ")";
+          break;
+      }
+      Object blockingJob = null;
+      try {
+        blockingJob =
+            ReflectionUtil.invoke(Job.getJobManager(), "findBlockingJob", InternalJob.class, job);
+      } catch (Exception ex) {
+        System.err.println("Unable to fetch blocking-job: " + ex);
+      }
+      System.err.printf(" %s[%d,%s%s%s%s]: %s%s\n", job.getClass().getName(), job.getPriority(),
+          status, (job.isUser() ? ",user" : ""), (job.isSystem() ? ",system" : ""),
+          (job.isBlocking() ? ",blocking" : ""), job,
+          (blockingJob != null ? "; blocked by: " + blockingJob : ""));
     }
   }
 
