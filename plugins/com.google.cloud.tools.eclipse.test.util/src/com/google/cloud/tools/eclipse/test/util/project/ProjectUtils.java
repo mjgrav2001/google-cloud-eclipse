@@ -227,13 +227,13 @@ public class ProjectUtils {
                 timer, currentBuildErrors.size());
           }
           // Uncomment if tests are failing to identify any other build-related jobs.
-          // Job[] otherJobs = Job.getJobManager().find(null);
-          // if (otherJobs.length > 0) {
-          // System.err.printf("Ignoring %d unrelated jobs:\n", otherJobs.length);
-          // for (Job job : otherJobs) {
-          // System.err.printf(" %s: %s\n", job.getClass().getName(), job);
-          // }
-          // }
+          Job[] otherJobs = Job.getJobManager().find(null);
+          if (otherJobs.length > 0) {
+          System.err.printf("Ignoring %d unrelated jobs:\n", otherJobs.length);
+          for (Job job : otherJobs) {
+          System.err.printf(" %s: %s\n", job.getClass().getName(), job);
+          }
+          }
         }
       } while (!jobs.isEmpty() || buildErrorsChanging);
     } catch (CoreException | InterruptedException ex) {
