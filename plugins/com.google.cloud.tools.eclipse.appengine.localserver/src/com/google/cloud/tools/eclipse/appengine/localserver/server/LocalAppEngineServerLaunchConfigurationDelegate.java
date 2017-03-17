@@ -145,27 +145,6 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     return super.getLaunch(configuration, mode);
   }
 
-  private void printFileContents(IContainer container, String path) {
-    java.nio.file.Path path = Paths.get("foo");
-    path.relativize(other)
-    container.getProject().getWorkspace().getRoot().
-    IResource resource = container.findMember(path);
-    if (!resource.exists()) {
-      System.err.println("--- Path does not exist: " + path);
-    } else if (resource.getType() != IResource.FILE) {
-      System.err.println("--- Path is not a file: " + path);
-    } else {
-      try {
-        String contents = CharStreams.toString(
-            new InputStreamReader(((IFile) resource).getContents(), StandardCharsets.UTF_8));
-        System.out.printf("---- Contents of %s  ----\n%s\n----------------",
-            path, contents);
-      } catch (Exception ex) {
-        System.err.println("--- Exception accesing file: " + path + ": " + ex);
-      }
-    }
-  }
-
   /**
    * Create a CloudSdk RunConfiguration corresponding to the launch configuration and server
    * defaults. Details are pulled from {@link ILaunchConfiguration#getAttributes() launch
