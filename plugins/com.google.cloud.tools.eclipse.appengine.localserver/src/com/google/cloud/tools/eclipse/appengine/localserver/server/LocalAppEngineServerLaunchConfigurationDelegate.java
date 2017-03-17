@@ -33,10 +33,14 @@ import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.io.CharStreams;
 import com.google.common.net.InetAddresses;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +52,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -136,6 +143,27 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
       }
     }
     return super.getLaunch(configuration, mode);
+  }
+
+  private void printFileContents(IContainer container, String path) {
+    java.nio.file.Path path = Paths.get("foo");
+    path.relativize(other)
+    container.getProject().getWorkspace().getRoot().
+    IResource resource = container.findMember(path);
+    if (!resource.exists()) {
+      System.err.println("--- Path does not exist: " + path);
+    } else if (resource.getType() != IResource.FILE) {
+      System.err.println("--- Path is not a file: " + path);
+    } else {
+      try {
+        String contents = CharStreams.toString(
+            new InputStreamReader(((IFile) resource).getContents(), StandardCharsets.UTF_8));
+        System.out.printf("---- Contents of %s  ----\n%s\n----------------",
+            path, contents);
+      } catch (Exception ex) {
+        System.err.println("--- Exception accesing file: " + path + ": " + ex);
+      }
+    }
   }
 
   /**
@@ -459,15 +487,25 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
   @Override
   protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode)
       throws CoreException {
-    IProject[] projects = getReferencedProjects(configuration);
-    return computeBuildOrder(projects);
+    try {
+      IProject[] projects = getReferencedProjects(configuration);
+      return computeBuildOrder(projects);
+    } catch (Throwable ex) {
+      ex.printStackTrace();
+      throw ex;
+    }
   }
 
   @Override
   protected IProject[] getProjectsForProblemSearch(ILaunchConfiguration configuration, String mode)
       throws CoreException {
-    IProject[] projects = getReferencedProjects(configuration);
-    return computeReferencedBuildOrder(projects);
+    try {
+      IProject[] projects = getReferencedProjects(configuration);
+      return computeReferencedBuildOrder(projects);
+    } catch (Throwable ex) {
+      ex.printStackTrace();
+      throw ex;
+    }
   }
 
   private static IProject[] getReferencedProjects(ILaunchConfiguration configuration)
