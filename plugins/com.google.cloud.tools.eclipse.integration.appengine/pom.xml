@@ -21,6 +21,7 @@
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
           <product>org.eclipse.platform.ide</product>
+          <appArgLine>-debug debug.options</appArgLine>
         </configuration>
       </plugin>
       <plugin>

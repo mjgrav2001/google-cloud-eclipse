@@ -1,0 +1,5 @@
+org.eclipse.core.resources/debug=true
+org.eclipse.core.resources/build/failure=true
+org.eclipse.core.resources/build/interrupt=true
+org.eclipse.core.resources/build/invoking=true
+org.eclipse.core.resources/build/needbuild=true
