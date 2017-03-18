@@ -44,6 +44,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -203,6 +204,14 @@ public class ProjectUtils {
       Collection<Job> jobs = Collections.emptyList();
       Set<String> previousBuildErrors = Collections.emptySet();
       boolean buildErrorsChanging;
+      for (IProject project : projects) {
+        try {
+          project.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, null);
+        } catch (Exception ex) {
+          System.err.printf("ProjectUtils#waitForProjects[%s]: error building %s: %s\n", timer,
+              project, ex);
+        }
+      }
       do {
         // wait a little bit to give the builders a chance
         delayTactic.run();
