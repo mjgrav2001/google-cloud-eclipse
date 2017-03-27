@@ -37,5 +37,10 @@ cache:
    - $HOME/.m2
    - $HOME/google-cloud-sdk
 after_success:
-  # test req'd as we don't run coverage on all elements of the matrix
-  - if [ -d build/jacoco/target ]; then bash <(curl -s https://codecov.io/bash); fi
+- if [ -d build/jacoco/target ]; then bash <(curl -s https://codecov.io/bash); fi
+# Upload build reports to our Google Cloud Storage bucket
+# Decrypt service key after 
+- openssl aes-256-cbc -K $encrypted_42b011b17512_key -iv $encrypted_42b011b17512_iv
+  -in .ci/travis-service-account.json.enc -out /tmp/travis-service-account.json -d
+- gcloud auth activate-service-account --key-file=/tmp/travis-service-account.json
+- .ci/upload-build-results.sh gs://gcloud-eclipse-testing/${TRAVIS_BUILD_NUMBER}-{TRAVIS_OS_NAME}
