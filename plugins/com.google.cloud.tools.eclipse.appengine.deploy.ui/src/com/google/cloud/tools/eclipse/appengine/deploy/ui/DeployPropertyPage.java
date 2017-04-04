@@ -146,12 +146,12 @@ public class DeployPropertyPage extends PropertyPage {
     if (databindingSupport != null) {
       databindingSupport.dispose();
     }
-    if (facetedProject != null && AppEngineStandardFacet.hasAppEngineFacet(facetedProject)) {
+    if (facetedProject != null && AppEngineStandardFacet.hasFacet(facetedProject)) {
       createStandardPanelIfNeeded();
       showPanel(standardPreferencesPanel);
     } else if (facetedProject != null 
         && ProjectFacetsManager.isProjectFacetDefined(AppEngineFlexFacet.ID) 
-        && AppEngineFlexFacet.hasAppEngineFacet(facetedProject)) {
+        && AppEngineFlexFacet.hasFacet(facetedProject)) {
       createFlexPanelIfNeeded();
       showPanel(flexPreferencesPanel);
     } else {

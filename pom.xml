@@ -50,8 +50,6 @@
     <module>plugins/com.google.cloud.tools.eclipse.appengine.libraries.ui.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.localserver</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.localserver.test</module>
-    <module>plugins/com.google.cloud.tools.eclipse.login</module>
-    <module>plugins/com.google.cloud.tools.eclipse.login.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.newproject</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.newproject.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.newproject.maven</module>
@@ -60,8 +58,12 @@
     <module>plugins/com.google.cloud.tools.eclipse.appengine.validation.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.ui</module>
     <module>plugins/com.google.cloud.tools.eclipse.appengine.ui.test</module>
+    <module>plugins/com.google.cloud.tools.eclipse.bugreport</module>
+    <module>plugins/com.google.cloud.tools.eclipse.bugreport.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.googleapis</module>
     <module>plugins/com.google.cloud.tools.eclipse.googleapis.test</module>
+    <module>plugins/com.google.cloud.tools.eclipse.login</module>
+    <module>plugins/com.google.cloud.tools.eclipse.login.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.postinstall</module>
     <module>plugins/com.google.cloud.tools.eclipse.postinstall.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.preferences</module>
@@ -88,6 +90,8 @@
     <module>plugins/com.google.cloud.tools.eclipse.aeri.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.dataflow.core</module>
     <module>plugins/com.google.cloud.tools.eclipse.dataflow.core.test</module>
+    <module>plugins/com.google.cloud.tools.eclipse.dataflow.ui</module>
+    <module>plugins/com.google.cloud.tools.eclipse.dataflow.ui.test</module>
     <module>plugins/com.google.cloud.tools.eclipse.integration.appengine</module>
 
     <module>third_party/com.google.cloud.tools.eclipse.jdt.launching</module>
@@ -143,7 +147,7 @@
       <!-- bundle: com.google.cloud.tools.appengine -->
       <groupId>com.google.cloud.tools</groupId>
       <artifactId>appengine-plugins-core</artifactId>
-      <version>0.2.6</version>
+      <version>0.2.11</version>
     </dependency>
     <dependency>
       <!-- bundle: com.google.guava -->
@@ -347,6 +351,7 @@
           <artifactId>tycho-surefire-plugin</artifactId>
           <version>${tycho.version}</version>
           <configuration>
+            <runOrder>hourly</runOrder>
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
             <argLine>${jacoco.agentArgLine} -Dorg.eclipse.swtbot.search.timeout=${org.eclipse.swtbot.search.timeout} -Xms40m -Xmx1G -XX:MaxPermSize=512m -Djava.awt.headless=true ${os-jvm-flags}</argLine>
           </configuration>

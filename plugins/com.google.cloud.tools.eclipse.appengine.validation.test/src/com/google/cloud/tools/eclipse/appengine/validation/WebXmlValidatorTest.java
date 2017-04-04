@@ -16,43 +16,87 @@
 
 package com.google.cloud.tools.eclipse.appengine.validation;
 
-import static org.mockito.Mockito.when;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class WebXmlValidatorTest {
  
-  IFile file = Mockito.mock(IFile.class);
+  private final WebXmlValidator validator = new WebXmlValidator();
   
- @Test
- public void testValidate() throws CoreException, IOException, ParserConfigurationException {
-   String markerId = "com.google.cloud.tools.eclipse.appengine.validation.servletMarker";
-   when(file.createMarker(markerId)).thenReturn(Mockito.mock(IMarker.class));
-   String xml = 
-       "<web-app xmlns='http://xmlns.jcp.org/xml/ns/javaee' version='3.1'></web-app>";
-   byte[] bytes = xml.getBytes(StandardCharsets.UTF_8);
-   WebXmlValidator validator = new WebXmlValidator();
-   validator.validate(file, bytes);
-   Mockito.verify(file, Mockito.times(1)).createMarker(markerId);
- }
- 
- @Test
- public void testValidate_noMarkers()
-     throws CoreException, IOException, ParserConfigurationException {
-   String xml = 
-       "<web-app xmlns='http://java.sun.com/xml/ns/javaee' version='2.5'></web-app>";
-   byte[] bytes = xml.getBytes(StandardCharsets.UTF_8);
-   WebXmlValidator validator = new WebXmlValidator();
-   validator.validate(file, bytes);
-   String markerId = "com.google.cloud.tools.eclipse.appengine.validation.servletMarker";
-   Mockito.verify(file, Mockito.times(0)).createMarker(markerId);
- }
+  @Test
+  public void testValidateJavaServlet() throws ParserConfigurationException {
+    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
+    Document document = documentBuilder.newDocument();
+
+    Element element = document.createElementNS("http://xmlns.jcp.org/xml/ns/javaee", "web-app");
+    element.setUserData("version", "3.1", null);
+    element.setUserData("location", new DocumentLocation(1, 1), null);
+    document.appendChild(element);
+    
+    ArrayList<BannedElement> blacklist = validator.checkForElements(null, document);
+    
+    assertEquals(1, blacklist.size());
+    String markerId = "com.google.cloud.tools.eclipse.appengine.validation.servletMarker";
+    assertEquals(markerId, blacklist.get(0).getMarkerId());
+  }
+  
+  @Test
+  public void testCheckForElements_noElements() throws ParserConfigurationException {
+    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
+    Document document = documentBuilder.newDocument();
+    
+    Element element = document.createElementNS("http://java.sun.com/xml/ns/javaee", "web-app");
+    element.setUserData("version", "2.5", null);
+    element.setUserData("location", new DocumentLocation(1, 1), null);
+    document.appendChild(element);
+    
+    ArrayList<BannedElement> blacklist = validator.checkForElements(null, document);
+    
+    assertEquals(0, blacklist.size());
+  }
+  
+  @Test
+  public void testValidateServletMapping() throws ParserConfigurationException {
+    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
+    Document document = documentBuilder.newDocument();
+    
+    Element webApp = document.createElementNS("http://java.sun.com/xml/ns/javaee", "web-app");
+    webApp.setUserData("version", "2.5", null);
+    webApp.setUserData("location", new DocumentLocation(1, 1), null);
+    
+    Element servlet = document.createElementNS("http://java.sun.com/xml/ns/javaee", "servlet");
+    servlet.setUserData("location", new DocumentLocation(2, 1), null);
+    
+    Element servletName = document.createElementNS("http://java.sun.com/xml/ns/javaee", "servlet-name");
+    servletName.setTextContent("ServletName");
+    servletName.setUserData("location", new DocumentLocation(3, 1), null);
+    servlet.appendChild(servletName);
+    webApp.appendChild(servlet);
+    
+    Element servletMapping = document.createElementNS("http://java.sun.com/xml/ns/javaee", "servlet-mapping");
+    servletMapping.setUserData("location", new DocumentLocation(4, 1), null);
+    
+    Element servletMappingName = document.createElementNS("http://java.sun.com/xml/ns/javaee", "servlet-name");
+    servletMappingName.setTextContent("NotServletName");
+    servletMappingName.setUserData("location", new DocumentLocation(2, 1), null);
+    servletMapping.appendChild(servletMappingName);
+    webApp.appendChild(servletMapping);
+    
+    document.appendChild(webApp);
+    
+    ArrayList<BannedElement> blacklist = validator.checkForElements(null, document);
+    assertEquals(1, blacklist.size());
+  }
  
 }

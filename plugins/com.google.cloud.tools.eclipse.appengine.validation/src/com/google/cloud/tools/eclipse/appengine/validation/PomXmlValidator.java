@@ -16,35 +16,48 @@
 
 package com.google.cloud.tools.eclipse.appengine.validation;
 
-import java.io.IOException;
-import java.util.Map;
+import java.util.ArrayList;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import javax.xml.parsers.ParserConfigurationException;
+import org.eclipse.core.resources.IResource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.xml.sax.SAXException;
+public class PomXmlValidator implements XmlValidationHelper {
 
-public class PomXmlValidator extends AbstractXmlValidator {
+  private static final XPathFactory FACTORY = XPathFactory.newInstance();
 
   /**
-   * Clears all problem markers from the resource, then adds a Maven plugin marker
-   * to pom.xml if the App Engine Maven plugin is obsolete.
+   * Selects all the <groupId> elements with value "com.google.appengine" whose <artifactId>
+   * sibling has the value "appengine-maven-plugin" or "gcloud-maven-plugin".
    */
   @Override
-  protected void validate(IFile resource, byte[] bytes)
-      throws CoreException, IOException, ParserConfigurationException {
+  public ArrayList<BannedElement> checkForElements(IResource resource, Document document) {
+    ArrayList<BannedElement> blacklist = new ArrayList<>();
     try {
-      deleteMarkers(resource);
-      SaxParserResults parserResults = PomParser.readXml(bytes);
-      Map<BannedElement, Integer> bannedElementOffsetMap =
-          ValidationUtils.getOffsetMap(bytes, parserResults);
-      for (Map.Entry<BannedElement, Integer> entry : bannedElementOffsetMap.entrySet()) {
-        createMarker(resource, entry.getKey(), entry.getValue());
+      XPath xPath = FACTORY.newXPath();
+      NamespaceContext nsContext = new MavenContext();
+      xPath.setNamespaceContext(nsContext);
+      String selectGroupId = "//prefix:plugin/prefix:groupId[.='com.google.appengine']"
+          + "[../prefix:artifactId[text()='appengine-maven-plugin'"
+          + " or text()='gcloud-maven-plugin']]";
+      NodeList groupIdElements =
+          (NodeList) xPath.compile(selectGroupId).evaluate(document, XPathConstants.NODESET);
+      for (int i = 0; i < groupIdElements.getLength(); i++) {
+        Node child = groupIdElements.item(i);
+        DocumentLocation location = (DocumentLocation) child.getUserData("location");
+        BannedElement element = new MavenPluginElement(location, child.getTextContent().length());
+        blacklist.add(element);
       }
-    } catch (SAXException ex) {
-      createSaxErrorMessage(resource, ex);
+    } catch (XPathExpressionException ex) {
+      throw new RuntimeException("Invalid XPath expression");
     }
+    return blacklist;
   }
   
 }
