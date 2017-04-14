@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.appengine.deploy.standard;
+package com.google.cloud.tools.eclipse.appengine.deploy;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.cloud.tools.appengine.api.deploy.DefaultDeployConfiguration;
@@ -23,11 +23,6 @@ import com.google.cloud.tools.appengine.cloudsdk.process.ProcessExitListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessOutputLineListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessStartListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.StringBuilderProcessOutputLineListener;
-import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployOutput;
-import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineProjectDeployer;
-import com.google.cloud.tools.eclipse.appengine.deploy.DeployStaging;
-import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
-import com.google.cloud.tools.eclipse.appengine.deploy.WarPublisher;
 import com.google.cloud.tools.eclipse.login.CredentialHelper;
 import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
@@ -63,7 +58,7 @@ import org.eclipse.core.runtime.SubMonitor;
  * It uses a work directory where it will create separate directories for the exploded WAR and the
  * staging results.
  */
-public class StandardDeployJob extends WorkspaceJob {
+public class DeployJob extends WorkspaceJob {
 
   private static final String STAGING_DIRECTORY_NAME = "staging";
   private static final String EXPLODED_WAR_DIRECTORY_NAME = "exploded-war";
@@ -85,7 +80,7 @@ public class StandardDeployJob extends WorkspaceJob {
   private final boolean includeOptionalConfigurationFiles;
   private final CollectingLineListener errorCollectingLineListener;
 
-  public StandardDeployJob(IProject project,
+  public DeployJob(IProject project,
                            Credential credential,
                            IPath workDirectory,
                            ProcessOutputLineListener stagingStdoutLineListener,

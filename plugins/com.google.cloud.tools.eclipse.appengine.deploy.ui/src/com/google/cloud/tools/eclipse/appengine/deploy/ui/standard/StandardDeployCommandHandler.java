@@ -19,7 +19,7 @@ package com.google.cloud.tools.eclipse.appengine.deploy.ui.standard;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.cloud.tools.appengine.api.deploy.DefaultDeployConfiguration;
 import com.google.cloud.tools.eclipse.appengine.deploy.CleanupOldDeploysJob;
-import com.google.cloud.tools.eclipse.appengine.deploy.standard.StandardDeployJob;
+import com.google.cloud.tools.eclipse.appengine.deploy.DeployJob;
 import com.google.cloud.tools.eclipse.appengine.deploy.standard.StandardDeployPreferences;
 import com.google.cloud.tools.eclipse.appengine.deploy.standard.StandardDeployPreferencesConverter;
 import com.google.cloud.tools.eclipse.appengine.deploy.ui.DeployConsole;
@@ -125,11 +125,10 @@ public class StandardDeployCommandHandler extends AbstractHandler {
     boolean includeOptionalConfigurationFiles =
         new StandardDeployPreferences(project).isIncludeOptionalConfigurationFiles();
 
-    StandardDeployJob deploy =
-        new StandardDeployJob(project, credential, workDirectory,
-                              new MessageConsoleWriterOutputLineListener(outputStream),
-                              new MessageConsoleWriterOutputLineListener(outputStream),
-                              deployConfiguration, includeOptionalConfigurationFiles);
+    DeployJob deploy = new DeployJob(project, credential, workDirectory,
+        new MessageConsoleWriterOutputLineListener(outputStream),
+        new MessageConsoleWriterOutputLineListener(outputStream),
+        deployConfiguration, includeOptionalConfigurationFiles);
     messageConsole.setJob(deploy);
     deploy.addJobChangeListener(new JobChangeAdapter() {
 
