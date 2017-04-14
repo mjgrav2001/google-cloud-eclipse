@@ -16,14 +16,14 @@
 
 package com.google.cloud.tools.eclipse.appengine.deploy.ui;
 
+import com.google.cloud.tools.eclipse.appengine.deploy.DeployJob;
+import com.google.common.base.Preconditions;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -32,8 +32,6 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.part.IPageBookViewPage;
-import com.google.cloud.tools.eclipse.appengine.deploy.DeployJob;
-import com.google.common.base.Preconditions;
 
 public class DeployConsolePageParticipant implements IConsolePageParticipant {
 
@@ -47,18 +45,8 @@ public class DeployConsolePageParticipant implements IConsolePageParticipant {
                                 "console should be instance of %s",
                                 DeployConsole.class.getName());
     this.console = (DeployConsole) console;
+    Preconditions.checkState(this.console.getJob() != null);
 
-    console.addPropertyChangeListener(new IPropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(DeployConsole.PROPERTY_JOB)) {
-          // keep the order of adding a listener and then calling update() to ensure update 
-          // is called regardless of when the job finishes
-          addJobChangeListener();
-          update();
-        }
-      }
-    });
     IActionBars actionBars = page.getSite().getActionBars();
     configureToolBar(actionBars.getToolBarManager());
     // keep the order of adding a listener and then calling update() to ensure update
@@ -77,27 +65,18 @@ public class DeployConsolePageParticipant implements IConsolePageParticipant {
 
   private void addJobChangeListener() {
     DeployJob job = console.getJob();
-    if (job != null) {
-      job.addJobChangeListener(new JobChangeAdapter() {
-        @Override
-        public void done(IJobChangeEvent event) {
-          update();
-        }
-      });
-    }
+    job.addJobChangeListener(new JobChangeAdapter() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        update();
+      }
+    });
   }
 
   private void update() {
     DeployJob job = console.getJob();
-    if (job != null) {
-      if (terminateAction != null) {
-        terminateAction.setEnabled(job.getState() != Job.NONE);
-      }
-
-      if (closeAction != null) {
-        closeAction.setEnabled(job.getState() == Job.NONE);
-      }
-    }
+    terminateAction.setEnabled(job.getState() != Job.NONE);
+    closeAction.setEnabled(job.getState() == Job.NONE);
   }
 
   private Action createCloseAction() {
@@ -118,11 +97,8 @@ public class DeployConsolePageParticipant implements IConsolePageParticipant {
     Action terminate = new Action(Messages.getString("action.stop")) {
       @Override
       public void run() {
-        DeployJob job = console.getJob();
-        if (job != null) {
-          job.cancel();
-          update();
-        }
+        console.getJob().cancel();
+        update();
       }
     };
     terminate.setToolTipText(Messages.getString("action.stop"));
@@ -132,7 +108,7 @@ public class DeployConsolePageParticipant implements IConsolePageParticipant {
     return terminate;
   }
 
-  private ImageDescriptor getSharedImage(String image) {
+  private static ImageDescriptor getSharedImage(String image) {
     return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(image);
   }
 
