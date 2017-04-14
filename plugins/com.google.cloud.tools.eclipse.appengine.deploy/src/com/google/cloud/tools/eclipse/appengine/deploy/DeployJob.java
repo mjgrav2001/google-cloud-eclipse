@@ -80,13 +80,11 @@ public class DeployJob extends WorkspaceJob {
   private final boolean includeOptionalConfigurationFiles;
   private final CollectingLineListener errorCollectingLineListener;
 
-  public DeployJob(IProject project,
-                           Credential credential,
-                           IPath workDirectory,
-                           ProcessOutputLineListener stagingStdoutLineListener,
-                           ProcessOutputLineListener stderrLineListener,
-                           DefaultDeployConfiguration deployConfiguration,
-                           boolean includeOptionalConfigurationFiles) {
+  public DeployJob(IProject project, Credential credential, IPath workDirectory,
+      ProcessOutputLineListener stagingStdoutLineListener,
+      ProcessOutputLineListener stderrLineListener,
+      DefaultDeployConfiguration deployConfiguration,
+      boolean includeOptionalConfigurationFiles) {
     super(Messages.getString("deploy.standard.runnable.name")); //$NON-NLS-1$
     this.project = project;
     this.credential = credential;
