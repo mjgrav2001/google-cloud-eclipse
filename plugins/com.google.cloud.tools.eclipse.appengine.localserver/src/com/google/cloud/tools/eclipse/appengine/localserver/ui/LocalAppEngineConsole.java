@@ -41,7 +41,7 @@ public class LocalAppEngineConsole extends MessageConsole {
     }
   };
 
-  private LocalAppEngineConsole(String name, LocalAppEngineServerBehaviour serverBehaviour) {
+  public LocalAppEngineConsole(String name, LocalAppEngineServerBehaviour serverBehaviour) {
     super(name, null);
     this.unprefixedName = name;
     this.serverBehaviour = serverBehaviour;
@@ -90,6 +90,7 @@ public class LocalAppEngineConsole extends MessageConsole {
     serverBehaviour.getServer().removeServerListener(serverStateListener);
     super.dispose();
   }
+
 
 
   public static class Factory implements ConsoleFactory<LocalAppEngineConsole> {

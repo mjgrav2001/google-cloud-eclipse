@@ -25,25 +25,23 @@ import org.eclipse.ui.console.MessageConsole;
 
 public class DeployConsole extends MessageConsole {
 
-  static final String PROPERTY_JOB = DeployConsole.class.getName() + ".job";
+  public static final String PROPERTY_JOB = DeployConsole.class.getName() + ".job";
 
   private static final String TYPE = "com.google.cloud.tools.eclipse.appengine.deploy.consoleType";
 
   private DeployJob job;
 
-  private DeployConsole(String name) {
+  public DeployConsole(String name) {
     super(name, null);
     setType(TYPE);
   }
 
-  DeployJob getJob() {
+  public DeployJob getJob() {
     return job;
   }
 
-  public void setJob(DeployJob newJob) {
-    DeployJob oldJob = job;
-    job = newJob;
-    firePropertyChange(this, PROPERTY_JOB, oldJob, newJob);
+  public void setJob(DeployJob deployJob) {
+    firePropertyChange(this, PROPERTY_JOB, job, this.job = deployJob);
     job.addJobChangeListener(new JobChangeAdapter() {
       @Override
       public void done(IJobChangeEvent event) {
