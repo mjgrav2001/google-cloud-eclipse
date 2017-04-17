@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.appengine.deploy.standard;
+package com.google.cloud.tools.eclipse.appengine.deploy;
 
 import com.google.cloud.tools.appengine.api.deploy.DefaultDeployConfiguration;
 import com.google.common.base.Strings;
 
-public class StandardDeployPreferencesConverter {
+public class DeployPreferencesConverter {
 
-  private StandardDeployPreferences preferences;
-
-  public StandardDeployPreferencesConverter(StandardDeployPreferences preferences) {
-    this.preferences = preferences;
-  }
-
-  public DefaultDeployConfiguration toDeployConfiguration() {
+  public static DefaultDeployConfiguration toDeployConfiguration(DeployPreferences preferences) {
     DefaultDeployConfiguration configuration = new DefaultDeployConfiguration();
 
     configuration.setProject(preferences.getProjectId());

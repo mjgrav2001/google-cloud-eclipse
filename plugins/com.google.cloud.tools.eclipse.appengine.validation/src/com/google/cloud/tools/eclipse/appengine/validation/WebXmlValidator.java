@@ -21,13 +21,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -39,6 +40,9 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.wst.common.componentcore.ComponentCore;
+import org.eclipse.wst.common.componentcore.resources.IVirtualComponent;
+import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -65,6 +69,7 @@ public class WebXmlValidator implements XmlValidationHelper {
     validateJavaServlet();
     validateServletClass();
     validateServletMapping();
+    validateJsp();
     return blacklist;
   }
   
@@ -142,6 +147,61 @@ public class WebXmlValidator implements XmlValidationHelper {
     } catch (XPathExpressionException ex) {
       throw new RuntimeException("Invalid XPath expression");
     }
+  }
+  
+  /**
+   * Verifies that every <jsp-file> element exists in the project.
+   */
+  private void validateJsp() {
+    if (isVersion25()) {
+      IProject project = resource.getProject();
+      IVirtualComponent component = ComponentCore.createComponent(project);
+      if (component != null && component.exists()) {
+        IVirtualFolder root = component.getRootFolder();
+        if (root.exists()) {
+          NodeList jspList = document.getElementsByTagName("jsp-file");
+          for (int i = 0; i < jspList.getLength(); i++) {
+            Node jspNode = jspList.item(i);
+            String jspName = jspNode.getTextContent();
+            if (!resolveJsp(root, jspName)) {
+              DocumentLocation location = (DocumentLocation) jspNode.getUserData("location");
+              BannedElement element = new JspFileElement(jspName, location, jspName.length());
+              blacklist.add(element);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  private static boolean resolveJsp(IVirtualFolder root, String fileName) {
+    // For a typical Maven project:
+    // WEB-INF         -> src/main/webapp/WEB-INF
+    //    /            -> src/main/webapp
+    // WEB-INF/classes -> src/main/java
+    // WEB-INF/lib     -> src/main/webapp/WEB-INF/lib
+    IFile file = root.getFile(fileName).getUnderlyingFile();
+    if (file.exists()) {
+      return true;
+    }
+    file = root.getFile("WEB-INF/" + fileName).getUnderlyingFile();
+    if (file.exists()) {
+      return true;
+    }
+    file = root.getFile("WEB-INF/classes/" + fileName).getUnderlyingFile();
+    if (file.exists()) {
+      return true;
+    }
+    // TODO: Search for JSP files in jars if web.xml is version 3.0+.
+    // JSP file META-INF/resources/test.jsp in a jar should be able to be referenced
+    // as test.jsp in web.xml.
+    return false;
+  }
+  
+  private boolean isVersion25() {
+    Node node = document.getFirstChild();
+    String versionString = (String) node.getUserData("version");
+    return "2.5".equals(versionString);
   }
   
   private static IJavaProject getProject(IResource resource) {

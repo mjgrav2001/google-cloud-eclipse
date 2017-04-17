@@ -21,15 +21,15 @@ import static org.junit.Assert.assertEquals;
 import org.eclipse.core.resources.IMarker;
 import org.junit.Test;
 
-public class UndefinedServletElementTest {
+public class JspFileElementTest {
 
   @Test
-  public void testUndefinedServletElement() {
+  public void testJspFileElement() {
     DocumentLocation location = new DocumentLocation(3, 15);
-    UndefinedServletElement element = new UndefinedServletElement("servlet", location, 17);
-    assertEquals("servlet", element.getServletClassName());
+    JspFileElement element = new JspFileElement("test.jsp", location, 17);
+    assertEquals("test.jsp", element.getJspFileName());
     assertEquals(IMarker.SEVERITY_ERROR, element.getIMarkerSeverity());
-    assertEquals("servlet could not be resolved", element.getMessage());
+    assertEquals("test.jsp could not be resolved", element.getMessage());
   }
 
 }
