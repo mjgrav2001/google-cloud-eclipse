@@ -80,6 +80,20 @@ public class DeployJob extends WorkspaceJob {
   private final boolean includeOptionalConfigurationFiles;
   private final CollectingLineListener errorCollectingLineListener;
 
+  /**
+   * @param workDirectory temporary work directory the job can safely use (e.g., for creating and
+   *     copying various files to stage and deploy)
+   * @param stagingStdoutLineListener {@link ProcessOutputLineListener} passed to {@link CloudSdk}
+   *     to capture the staging operation stdout (where {@code appcfg.sh} outputs user-visible
+   *     log messages)
+   * @param stderrLineListener {@link ProcessOutputLineListener} passed to {@link CloudSdk} to
+   *     capture the deploy operation stderr (where {@code gcloud app deploy} outputs user-visible
+   *     log messages)
+   * @param deployConfiguration configuration passed to {@link CloudSdk} that describes what and
+   *     how to deploy
+   * @param includeOptionalConfigurationFiles if true, deploys optional XML configuration files
+   *     (e.g., {@code queue.yaml}) together
+   */
   public DeployJob(IProject project, Credential credential, IPath workDirectory,
       ProcessOutputLineListener stagingStdoutLineListener,
       ProcessOutputLineListener stderrLineListener,
@@ -237,7 +251,7 @@ public class DeployJob extends WorkspaceJob {
   }
 
   @VisibleForTesting
-  public static String getDeployedAppUrl(boolean promoted, AppEngineDeployOutput deployOutput) {
+  static String getDeployedAppUrl(boolean promoted, AppEngineDeployOutput deployOutput) {
     String version = deployOutput.getVersion();
     String service = deployOutput.getService();
     String projectId = deployOutput.getProject();
