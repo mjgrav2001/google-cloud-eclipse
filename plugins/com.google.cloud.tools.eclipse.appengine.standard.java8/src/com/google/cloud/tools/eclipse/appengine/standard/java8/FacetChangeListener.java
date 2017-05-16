@@ -44,8 +44,7 @@ public class FacetChangeListener implements IFacetedProjectListener {
 
   @Override
   public void handleEvent(IFacetedProjectEvent event) {
-    if (event.getType() != Type.POST_INSTALL && event.getType() != Type.POST_UNINSTALL
-        && event.getType() != Type.POST_VERSION_CHANGE) {
+    if (event.getType() != Type.POST_VERSION_CHANGE) {
       return;
     }
     IProjectFacetActionEvent action = (IProjectFacetActionEvent) event;
