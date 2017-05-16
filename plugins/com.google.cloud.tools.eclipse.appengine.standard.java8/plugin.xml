@@ -90,7 +90,7 @@
         point="org.eclipse.wst.common.project.facet.core.listeners">
      <listener
            class="com.google.cloud.tools.eclipse.appengine.standard.java8.FacetChangeListener"
-           eventTypes="AVAILABLE_FACETS_CHANGED,POST_VERSION_CHANGE">
+           eventTypes="AVAILABLE_FACETS_CHANGED,POST_INSTALL,POST_VERSION_CHANGE,POST_UNINSTALL">
      </listener>
   </extension>
   <extension
