@@ -6,7 +6,7 @@
  *
  *    * Right-click in the editor and choose 'Create Target Definition File'
  *      to update the corresponding .target file.
- *    * Right-lick in the editor and choose 'Set as Target Platform'
+ *    * Right-click in the editor and choose 'Set as Target Platform'
  *      to update your IDE's target platform (regenerates the .target too)
  */
 target "GCP for Eclipse Neon" with source requirements
@@ -52,4 +52,8 @@ location "http://download.eclipse.org/tools/orbit/downloads/drops/R2016052021185
     org.hamcrest
 	ch.qos.logback.slf4j
 	org.slf4j.log4j
+}
+
+location "http://download.jboss.org/jbosstools/updates/requirements/springide/3.7.3.201602250914-RELEASE/" {
+  org.dadacoalition.yedit
 }

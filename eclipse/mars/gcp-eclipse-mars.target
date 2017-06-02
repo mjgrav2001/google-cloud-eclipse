@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
-<target name="GCP for Eclipse Mars" sequenceNumber="1492180482">
+<target name="GCP for Eclipse Mars" sequenceNumber="1496418581">
   <locations>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.license.feature.group" version="1.0.1.v20140414-1359"/>
@@ -44,6 +44,10 @@
       <unit id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
       <unit id="org.slf4j.log4j" version="1.7.2.v20130115-1340"/>
       <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160221192158/repository/"/>
+    </location>
+    <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
+      <unit id="org.dadacoalition.yedit" version="1.0.18.201602092025-RELEASE-SIGNED"/>
+      <repository location="http://download.jboss.org/jbosstools/updates/requirements/springide/3.7.3.201602250914-RELEASE/"/>
     </location>
   </locations>
 </target>

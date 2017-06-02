@@ -56,3 +56,7 @@ location "http://download.eclipse.org/tools/orbit/downloads/drops/R2016022119215
 	ch.qos.logback.slf4j
 	org.slf4j.log4j
 }
+
+location "http://download.jboss.org/jbosstools/updates/requirements/springide/3.7.3.201602250914-RELEASE/" {
+  org.dadacoalition.yedit
+}

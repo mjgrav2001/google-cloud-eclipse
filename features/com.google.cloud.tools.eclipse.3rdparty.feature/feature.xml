@@ -80,5 +80,12 @@
          install-size="0"
          version="1.17.0"
          unpack="false"/>
+         
+   <plugin
+         id="org.dadacoalition.yedit"
+         download-size="0"
+         install-size="0"
+         version="1.0.18"
+         unpack="false"/>
 
 </feature>
