@@ -27,7 +27,6 @@
       <import feature="org.eclipse.wst.common.fproj" version="3.7.0.v201505072140" match="greaterOrEqual"/>
       <import feature="org.eclipse.jst.web_ui.feature" version="3.7.1.v201512021921" match="greaterOrEqual"/>
       <import feature="org.eclipse.wst.web_ui.feature" version="3.7.1.v201602111638" match="greaterOrEqual"/>
-      <import plugin="org.dadacoalition.yedit" version="1.0.18" match="greaterOrEqual"/>
    </requires>
 
    <!-- appengine-plugins-core -->
