@@ -20,13 +20,14 @@ import com.google.cloud.tools.appengine.cloudsdk.AppEngineJavaComponentsNotInsta
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkNotFoundException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkOutOfDateException;
+import com.google.cloud.tools.eclipse.appengine.newproject.flex.AppEngineFlexWizardPage;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineJavaComponentMissingPage;
 import com.google.cloud.tools.eclipse.appengine.ui.CloudSdkMissingPage;
 import com.google.cloud.tools.eclipse.appengine.ui.CloudSdkOutOfDatePage;
 import com.google.cloud.tools.eclipse.sdk.ui.preferences.CloudSdkPrompter;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
-import com.google.cloud.tools.eclipse.usagetracker.AnalyticsEvents;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
+import com.google.common.base.Preconditions;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.resources.IFile;
@@ -50,9 +51,7 @@ public abstract class AppEngineProjectWizard extends Wizard implements INewWizar
 
   public abstract AppEngineWizardPage createWizardPage();
 
-  public abstract void sendAnalyticsPing();
-
-  public abstract IStatus validateDependencies(boolean fork, boolean cancelable);
+  public abstract IStatus validateDependencies();
 
   public abstract CreateAppEngineWtpProject getAppEngineProjectCreationOperation(
       AppEngineProjectConfig config, IAdaptable uiInfoAdapter);
@@ -66,26 +65,19 @@ public abstract class AppEngineProjectWizard extends Wizard implements INewWizar
       page = createWizardPage();
       addPage(page);
     } catch (CloudSdkNotFoundException ex) {
-      addPage(new CloudSdkMissingPage(AnalyticsEvents.APP_ENGINE_NEW_PROJECT_WIZARD_TYPE_NATIVE));
+      addPage(new CloudSdkMissingPage());
     } catch (CloudSdkOutOfDateException ex) {
-      addPage(new CloudSdkOutOfDatePage(AnalyticsEvents.APP_ENGINE_NEW_PROJECT_WIZARD_TYPE_NATIVE));
+      addPage(new CloudSdkOutOfDatePage());
     } catch (AppEngineJavaComponentsNotInstalledException ex) {
-      addPage(new AppEngineJavaComponentMissingPage(
-          AnalyticsEvents.APP_ENGINE_NEW_PROJECT_WIZARD_TYPE_NATIVE));
+      addPage(new AppEngineJavaComponentMissingPage());
     }
   }
 
   @Override
   public boolean performFinish() {
-    sendAnalyticsPing();
+    Preconditions.checkState(page != null);
 
-    if (page == null) {
-      return true;
-    }
-
-    boolean fork = true;
-    boolean cancelable = true;
-    IStatus status = validateDependencies(fork, cancelable);
+    IStatus status = validateDependencies();
     if (!status.isOK()) {
       StatusUtil.setErrorStatus(this, status.getMessage(), status);
       return false;
@@ -100,12 +92,24 @@ public abstract class AppEngineProjectWizard extends Wizard implements INewWizar
 
     config.setAppEngineLibraries(page.getSelectedLibraries());
 
+    // TODO: we won't need this "instanceof" check once we implement a unified wizard:
+    // https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1326
+    if (page instanceof AppEngineFlexWizardPage) {
+      AppEngineFlexWizardPage flexPage = (AppEngineFlexWizardPage) page;
+      if (flexPage.asMavenProject()) {
+        config.setUseMaven(flexPage.getMavenGroupId(), flexPage.getMavenArtifactId(),
+            flexPage.getMavenVersion());
+      }
+    }
+
     // todo set up
     IAdaptable uiInfoAdapter = WorkspaceUndoUtil.getUIInfoAdapter(getShell());
     CreateAppEngineWtpProject runnable =
         getAppEngineProjectCreationOperation(config, uiInfoAdapter);
 
     try {
+      boolean fork = true;
+      boolean cancelable = true;
       getContainer().run(fork, cancelable, runnable);
 
       // open most important file created by wizard in editor
@@ -132,5 +136,4 @@ public abstract class AppEngineProjectWizard extends Wizard implements INewWizar
       }
     }
   }
-
 }
