@@ -59,11 +59,19 @@ public class NewDataflowProjectWizardDefaultRunOptionsPage extends WizardPage {
     addListeners();
   }
 
+  // todo using listeners here is weird; this would normally be done when the wizard finishes.
   private void addListeners() {
     runOptionsDefaultsComponent.addProjectModifyListener(new ModifyListener() {
       @Override
       public void modifyText(ModifyEvent event) {
         creator.setDefaultProject(runOptionsDefaultsComponent.getProject());
+      }
+    });
+    
+    runOptionsDefaultsComponent.addStagingLocationModifyListener(new ModifyListener() {
+      @Override
+      public void modifyText(ModifyEvent event) {
+        creator.setDefaultStagingLocation(runOptionsDefaultsComponent.getStagingLocation());
       }
     });
   }
