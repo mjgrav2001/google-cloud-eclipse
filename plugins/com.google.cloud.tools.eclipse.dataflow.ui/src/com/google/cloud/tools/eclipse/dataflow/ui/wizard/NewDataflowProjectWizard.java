@@ -39,6 +39,10 @@ public class NewDataflowProjectWizard extends Wizard implements INewWizard {
 
   @Override
   public boolean performFinish() {
+    
+    // todo rather than using listeners on every keystroke, here we should read the values out 
+    // of the UI and inject them into the creator
+    
     if (!creator.isValid()) {
       String message =
           "Tried to finish the New Dataflow Project Wizard "
