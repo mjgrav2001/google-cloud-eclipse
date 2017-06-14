@@ -39,7 +39,7 @@ import org.junit.Test;
 public class StandardStagingDelegateTest {
 
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator().withFacetVersions(
-      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.FACET_VERSION);
+      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.JAVA7);
 
   private final CloudSdk cloudSdk = new CloudSdk.Builder()
       .addStdOutLineListener(new OutputListener())
