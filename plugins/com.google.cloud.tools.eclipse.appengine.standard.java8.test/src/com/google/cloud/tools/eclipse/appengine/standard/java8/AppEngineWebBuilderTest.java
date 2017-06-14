@@ -51,7 +51,7 @@ public class AppEngineWebBuilderTest {
   @Test
   public void testAddedBuilder() throws CoreException {
     Action installAction =
-        new Action(Action.Type.INSTALL, AppEngineStandardFacet.FACET_VERSION, null);
+        new Action(Action.Type.INSTALL, AppEngineStandardFacet.JAVA8, null);
     testProject.getFacetedProject().modify(Collections.singleton(installAction), null);
 
     assertProjectHasBuilder();
@@ -61,12 +61,12 @@ public class AppEngineWebBuilderTest {
   @Test
   public void testRemovedBuilder() throws CoreException {
     Action installAction =
-        new Action(Action.Type.INSTALL, AppEngineStandardFacet.FACET_VERSION, null);
+        new Action(Action.Type.INSTALL, AppEngineStandardFacet.JAVA8, null);
     testProject.getFacetedProject().modify(Collections.singleton(installAction), null);
     assertProjectHasBuilder();
 
     Action uninstallAction =
-        new Action(Action.Type.UNINSTALL, AppEngineStandardFacet.FACET_VERSION, null);
+        new Action(Action.Type.UNINSTALL, AppEngineStandardFacet.JAVA8, null);
     testProject.getFacetedProject().modify(Collections.singleton(uninstallAction), null);
     assertProjectMissingBuilder();
   }
@@ -75,7 +75,7 @@ public class AppEngineWebBuilderTest {
   @Test
   public void testAddingJava8Runtime() throws CoreException {
     Action installAction =
-        new Action(Action.Type.INSTALL, AppEngineStandardFacet.FACET_VERSION, null);
+        new Action(Action.Type.INSTALL, AppEngineStandardFacet.JAVA7, null);
     testProject.getFacetedProject().modify(Collections.singleton(installAction), null);
     assertProjectHasBuilder();
 
@@ -89,11 +89,13 @@ public class AppEngineWebBuilderTest {
 
     AppEngineDescriptorTransform.addJava8Runtime(appEngineWebDescriptor);
     ProjectUtils.waitForProjects(testProject.getProject());
+    assertTrue(testProject.getFacetedProject().hasProjectFacet(AppEngineStandardFacet.JAVA8));
     assertTrue(testProject.getFacetedProject().hasProjectFacet(JavaFacet.VERSION_1_8));
     assertTrue(testProject.getFacetedProject().hasProjectFacet(WebFacetUtils.WEB_25));
 
     AppEngineDescriptorTransform.removeJava8Runtime(appEngineWebDescriptor);
     ProjectUtils.waitForProjects(testProject.getProject());
+    assertTrue(testProject.getFacetedProject().hasProjectFacet(AppEngineStandardFacet.JAVA7));
     assertTrue(testProject.getFacetedProject().hasProjectFacet(JavaFacet.VERSION_1_7));
     assertTrue(testProject.getFacetedProject().hasProjectFacet(WebFacetUtils.WEB_25));
   }

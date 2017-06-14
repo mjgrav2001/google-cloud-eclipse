@@ -47,7 +47,7 @@ public class JavaFacetChangeTests {
   @Rule
   public TestProjectCreator testProject = new TestProjectCreator()
       .withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_31,
-          AppEngineStandardFacet.FACET_VERSION);
+          AppEngineStandardFacet.JAVA7);
 
   @Test
   public void testChangeToAndFrom_1_8() throws CoreException, IOException, SAXException {

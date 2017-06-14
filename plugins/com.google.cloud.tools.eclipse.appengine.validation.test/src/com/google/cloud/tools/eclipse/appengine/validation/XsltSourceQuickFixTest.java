@@ -55,7 +55,7 @@ public class XsltSourceQuickFixTest {
 
   @Rule
   public TestProjectCreator appEngineStandardProject = new TestProjectCreator().withFacetVersions(
-      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.FACET_VERSION);
+      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.JAVA7);
 
   @Test
   public void testApply() throws CoreException {

@@ -38,9 +38,14 @@ import org.eclipse.wst.common.componentcore.resources.IVirtualFolder;
  * Utility classes for processing WTP Web Projects (jst.web and jst.utility).
  */
 public class WebProjectUtil {
-  final static String DEFAULT_WEB_PATH = "src/main/webapp";
+  /** Default top-level locations for WEB_INF */
+  public static final String DEFAULT_WEB_PATH = "src/main/webapp";
+
+  /** All possible top-level locations for WEB_INF */
+  final static String[] DEFAULT_WEB_PATHS = {DEFAULT_WEB_PATH, "WebContent", "web"};
 
   final static String WEB_INF = "WEB-INF/";
+
 
   /**
    * Return the project's <code>WEB-INF</code> directory. There is no guarantee that the contents
@@ -59,12 +64,13 @@ public class WebProjectUtil {
       }
     }
     // Otherwise it's seemingly fair game
-    IFolder defaultLocation = project.getFolder(DEFAULT_WEB_PATH).getFolder(WEB_INF);
-    if (defaultLocation.exists()) {
-      return defaultLocation;
-    } else {
-      return null;
+    for (String possibleWebInfContainer : DEFAULT_WEB_PATHS) {
+      IFolder defaultLocation = project.getFolder(possibleWebInfContainer).getFolder(WEB_INF);
+      if (defaultLocation.exists()) {
+        return defaultLocation;
+      }
     }
+    return null;
   }
 
   public static void removeWebDeploymentAssemblyEntry(IProject project, Path path)

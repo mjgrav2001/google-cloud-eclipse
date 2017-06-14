@@ -7,39 +7,37 @@
     <project-facet id="com.google.cloud.tools.eclipse.appengine.facets.standard">
        <label>%standardFacetName</label>
        <description>%standardFacetDescription</description>
+       <version-comparator
+             class="com.google.cloud.tools.eclipse.appengine.facets.StringVersionComparator">
+       </version-comparator>
     </project-facet>
-    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="1">
+    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="java7">
        <constraint>
           <and>
              <requires
-                   group="com.google.cloud.tools.eclipse.appengine.facets.standard.constraints.servlet">
+                   facet="java"
+                   version="1.7">
              </requires>
              <requires
-                   group="com.google.cloud.tools.eclipse.appengine.facets.standard.constraints.jre">
+                   facet="jst.web"
+                   version="2.5">
              </requires>
           </and>
         </constraint>
     </project-facet-version>
   </extension>
-   <extension
-         point="org.eclipse.wst.common.project.facet.core.groups">
-      <group
-            id="com.google.cloud.tools.eclipse.appengine.facets.standard.constraints.servlet">
-         <label>supported Dynamic Web Module APIs</label>
-         <include
-               facet="jst.web"
-               versions="2.5">
-         </include>
-      </group>
-      <group
-            id="com.google.cloud.tools.eclipse.appengine.facets.standard.constraints.jre">
-         <label>supported Java Runtimes</label>
-         <include
-               facet="java"
-               versions="1.7">
-         </include>
-      </group>
-   </extension>
+  
+  <extension
+        point="org.eclipse.wst.common.project.facet.core.aliases">
+     <!--
+	   Previously had a single version of the App Engine Standard facet, but were unable to express
+	   the facet constraints with the new `java8` runtime 
+     -->
+     <facet-version-alias
+           facet="com.google.cloud.tools.eclipse.appengine.facets.standard"
+           version="java7"
+           alias="1" />
+  </extension>
 
   <extension point="org.eclipse.wst.common.project.facet.core.facets">
     <action
