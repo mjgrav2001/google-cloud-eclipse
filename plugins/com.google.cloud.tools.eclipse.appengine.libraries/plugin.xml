@@ -275,7 +275,7 @@
       </libraryFile>
     </library>
 
-     <library
+    <library
           id="appengineadmin"
           group="clientapis"
           name="%appengineadmin.name"
@@ -288,6 +288,22 @@
               artifactId="google-api-services-appengine"
               groupId="com.google.apis"
               version="v1-rev24-1.22.0" />
+      </libraryFile>
+    </library>
+    
+    <library
+          id="clouddatastore"
+          group="clientapis"
+          name="%clouddatastore.name"
+          tooltip="%clouddatastore.tooltip"
+          siteUri="https://cloud.google.com/appengine/docs/admin-api/" >
+      <libraryDependency id="googlecloudcore" />
+      <libraryFile
+            javadocUri="https://googlecloudplatform.github.io/google-cloud-java/0.6.0/apidocs/index.html?com/google/cloud/datastore/package-summary.html">    
+        <mavenCoordinates
+              artifactId="google-cloud-datastore"
+              groupId="com.google.cloud"
+              version="1.0.1" />
       </libraryFile>
     </library>
   </extension>
