@@ -51,6 +51,9 @@ public class BaseProjectTest {
   @After
   public void tearDown() {
     if (project != null) {
+      // close editors, so no property changes are dispatched on delete
+      bot.closeAllEditors();
+
       // ensure there are no jobs
       SwtBotWorkbenchActions.waitForProjects(bot, project);
       try {
