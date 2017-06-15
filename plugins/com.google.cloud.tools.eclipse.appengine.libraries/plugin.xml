@@ -296,7 +296,7 @@
           group="clientapis"
           name="%clouddatastore.name"
           tooltip="%clouddatastore.tooltip"
-          siteUri="https://cloud.google.com/appengine/docs/admin-api/" >
+          siteUri="https://cloud.google.com/datastore/docs/reference/libraries#client-libraries-install-java" >
       <libraryDependency id="googlecloudcore" />
       <libraryFile
             javadocUri="https://googlecloudplatform.github.io/google-cloud-java/0.6.0/apidocs/index.html?com/google/cloud/datastore/package-summary.html">    
