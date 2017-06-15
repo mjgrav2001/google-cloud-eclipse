@@ -11,7 +11,7 @@
              class="com.google.cloud.tools.eclipse.appengine.facets.StringVersionComparator">
        </version-comparator>
     </project-facet>
-    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="java7">
+    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="jre7">
        <constraint>
           <and>
              <requires

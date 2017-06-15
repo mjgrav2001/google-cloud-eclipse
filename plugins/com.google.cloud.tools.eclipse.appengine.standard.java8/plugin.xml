@@ -15,7 +15,7 @@
 
    <extension
          point="org.eclipse.wst.common.project.facet.core.facets">
-    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="java8">
+    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="jre8">
        <constraint>
           <and>
              <requires
