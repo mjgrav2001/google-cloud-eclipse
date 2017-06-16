@@ -20,7 +20,6 @@ import com.google.cloud.tools.appengine.AppEngineDescriptor;
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.util.MavenUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
@@ -82,16 +81,24 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
       IProgressMonitor monitor) {
     try (InputStream input = appEngineWebDescriptor.getContents()) {
       boolean hasJava8Runtime = AppEngineDescriptor.parse(input).isJava8();
-      boolean hasJava8Facet = project.hasProjectFacet(JavaFacet.VERSION_1_8);
+      boolean hasAppEngineJava8Facet = project.hasProjectFacet(AppEngineStandardFacet.JRE8);
       // if not the same, then we update the facet to match the appengine-web.xml
-      if (hasJava8Facet != hasJava8Runtime) {
+      if (hasAppEngineJava8Facet != hasJava8Runtime) {
         Set<Action> updates = new HashSet<>();
+        // see https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1941
+        // and setting compiler settings is difficult to manage in a consistent way
+        // (https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html)
+        boolean isMaven = MavenUtils.hasMavenNature(project.getProject());
         if (hasJava8Runtime) {
-          updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_8, null));
-        } else if (!MavenUtils.hasMavenNature(project.getProject())) {
-          // see https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1941
-          // still not totally clear why this works for standard projects and not maven
-          updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_7, null));
+          updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE8, null));
+          if(!isMaven) {
+            updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_8, null));
+          }
+        } else {
+          updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE7, null));
+          if(!isMaven) {
+            updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_7, null));
+          }
         }
         logger.fine(getProject() + ": changing facets: " + updates);
         project.modify(updates, monitor);

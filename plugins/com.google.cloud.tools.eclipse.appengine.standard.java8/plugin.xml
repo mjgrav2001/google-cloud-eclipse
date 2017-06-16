@@ -15,7 +15,7 @@
 
    <extension
          point="org.eclipse.wst.common.project.facet.core.facets">
-    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="jre8">
+    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="JRE8">
        <constraint>
           <and>
              <requires
@@ -43,7 +43,7 @@
          </facet>
          <facet
                id="java"
-               version="1.8">
+               version="1.7,1.8">
          </facet>
       </supported>
 	</extension>
@@ -89,13 +89,13 @@
   <extension
         point="org.eclipse.wst.common.project.facet.core.listeners">
      <listener
-           class="com.google.cloud.tools.eclipse.appengine.standard.java8.FacetChangeListener"
+           class="com.google.cloud.tools.eclipse.appengine.standard.java8.AppEngineStandardFacetChangeListener"
            eventTypes="AVAILABLE_FACETS_CHANGED,POST_INSTALL,POST_VERSION_CHANGE,POST_UNINSTALL">
      </listener>
   </extension>
   <extension
         id="appengineWeb"
-        name="App Engine Standard Java 8"
+        name="App Engine Standard Java 8 runtime"
         point="org.eclipse.core.resources.builders">
      <builder
            callOnEmptyDelta="false">

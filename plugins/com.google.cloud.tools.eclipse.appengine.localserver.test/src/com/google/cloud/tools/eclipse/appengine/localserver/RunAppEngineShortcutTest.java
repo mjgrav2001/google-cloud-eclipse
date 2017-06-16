@@ -52,7 +52,7 @@ public class RunAppEngineShortcutTest {
   @Rule public TestProjectCreator emptyProjectCreator = new TestProjectCreator();
   @Rule public TestProjectCreator appEngineProjectCreator = new TestProjectCreator()
       .withFacetVersions(
-          JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.JAVA7);
+          JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.JRE7);
 
   @Test
   public void testRunAppEngine_enabledForAppEngineProject() {

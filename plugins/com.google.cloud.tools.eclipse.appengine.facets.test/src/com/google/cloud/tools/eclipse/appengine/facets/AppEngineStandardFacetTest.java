@@ -46,16 +46,22 @@ public class AppEngineStandardFacetTest {
   @Rule
   public TestProjectCreator appEngineProjectCreator =
       new TestProjectCreator().withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
-          AppEngineStandardFacet.JAVA7);
+          AppEngineStandardFacet.JRE7);
 
   @Test
   public void testStandardFacetExists() {
     Assert.assertEquals("com.google.cloud.tools.eclipse.appengine.facets.standard",
         AppEngineStandardFacet.ID);
-    Assert.assertEquals("java7", AppEngineStandardFacet.JAVA7.getVersionString());
-    Assert.assertEquals("java8", AppEngineStandardFacet.JAVA8.getVersionString());
+    Assert.assertEquals("JRE7", AppEngineStandardFacet.JRE7.getVersionString());
+    Assert.assertEquals("JRE8", AppEngineStandardFacet.JRE8.getVersionString());
     Assert.assertTrue(ProjectFacetsManager.isProjectFacetDefined(AppEngineStandardFacet.ID));
     Assert.assertEquals(AppEngineStandardFacet.ID, AppEngineStandardFacet.FACET.getId());
+  }
+
+  @Test
+  public void testDefaultFacetVersion() {
+    Assert.assertEquals(AppEngineStandardFacet.JRE7,
+        AppEngineStandardFacet.FACET.getDefaultVersion());
   }
 
   @Test
@@ -91,7 +97,7 @@ public class AppEngineStandardFacetTest {
   public void testGetProjectFacetVersion_withFacet() {
     IProjectFacetVersion facetVersion =
         AppEngineStandardFacet.getProjectFacetVersion(appEngineProjectCreator.getProject());
-    assertEquals(AppEngineStandardFacet.JAVA7, facetVersion);
+    assertEquals(AppEngineStandardFacet.JRE7, facetVersion);
   }
 
   @Test(expected = NullPointerException.class)
@@ -108,30 +114,30 @@ public class AppEngineStandardFacetTest {
   @Test
   public void testCheckServletApiSupport_nullVersion() {
     assertFalse(
-        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JAVA7, null));
+        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JRE7, null));
   }
 
   @Test
   public void testCheckServletApiSupport_blankVersion() {
     assertFalse(
-        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JAVA7, ""));
+        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JRE7, ""));
   }
 
   @Test
   public void testCheckServletApiSupport_invalidVersion() {
     assertFalse(
-        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JAVA7, "2.6"));
+        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JRE7, "2.6"));
   }
 
   @Test
   public void testCheckServletApiSupport_sameVersion() {
     assertTrue(
-        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JAVA7, "2.5"));
+        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JRE7, "2.5"));
   }
 
   @Test
   public void testCheckServletApiSupport_earlierVersion() {
     assertFalse(
-        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JAVA7, "2.4"));
+        AppEngineStandardFacet.checkServletApiSupport(AppEngineStandardFacet.JRE7, "2.4"));
   }
 }

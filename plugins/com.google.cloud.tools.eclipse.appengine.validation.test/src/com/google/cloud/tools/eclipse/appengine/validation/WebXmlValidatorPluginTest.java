@@ -48,7 +48,7 @@ public class WebXmlValidatorPluginTest {
   private IJavaProject javaProject;
   private IResource resource;
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator().withFacetVersions(
-      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.JAVA7);
+      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25, AppEngineStandardFacet.JRE7);
 
   @Before
   public void setUp() throws CoreException {

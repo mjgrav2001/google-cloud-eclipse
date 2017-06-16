@@ -51,7 +51,7 @@ public class XmlValidatorTest {
 
   @Rule public TestProjectCreator appEngineStandardProjectCreator =
       new TestProjectCreator().withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
-          AppEngineStandardFacet.JAVA7);
+          AppEngineStandardFacet.JRE7);
 
   @Rule public TestProjectCreator dynamicWebProjectCreator =
       new TestProjectCreator().withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25);

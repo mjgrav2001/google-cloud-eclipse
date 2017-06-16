@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
+import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProjectWorkingCopy;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetDetector;
@@ -28,7 +29,7 @@ public class Java8ProjectFacetDetector extends ProjectFacetDetector {
     SubMonitor progress = SubMonitor.convert(monitor, 10);
     IFile appEngineWebXml =
         WebProjectUtil.findInWebInf(fpjwc.getProject(), new Path("appengine-web.xml"));
-    if (!appEngineWebXml.exists()) {
+    if (appEngineWebXml == null || !appEngineWebXml.exists()) {
       logger.fine("skipping " + fpjwc.getProjectName() + ": no appengine-web.xml found");
       return;
     }
@@ -40,22 +41,25 @@ public class Java8ProjectFacetDetector extends ProjectFacetDetector {
       // Action javaInstallAction = fpjwc.getProjectFacetAction(JavaFacet.FACET);
       if (descriptor.isJava8()) {
         logger
-            .fine(fpjwc.getProjectName() + ": appengine-web.xml is java8 so setting Java 8 facet");
+            .fine(fpjwc.getProjectName() + ": appengine-web.xml has runtime=java8");
         if (!JavaFacet.VERSION_1_8.equals(javaFacetVersion)) {
+          logger.fine(fpjwc.getProjectName() + ": setting Java 8 facet");
           fpjwc.addProjectFacet(JavaFacet.VERSION_1_8);
         }
-        fpjwc.addProjectFacet(AppEngineStandardFacet.JAVA8);
-      } else if (!JavaFacet.VERSION_1_7.equals(javaFacetVersion)) {
+        if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+          logger.fine(fpjwc.getProjectName() + ": setting Dynamic Web 3.1 facet");
+          fpjwc.addProjectFacet(WebFacetUtils.WEB_31);
+        }
+        fpjwc.addProjectFacet(AppEngineStandardFacet.JRE8);
+      } else {
         logger.fine(
             fpjwc.getProjectName() + ": appengine-web.xml is not java8 so setting Java 7 facet");
         fpjwc.addProjectFacet(JavaFacet.VERSION_1_7);
-        fpjwc.addProjectFacet(AppEngineStandardFacet.JAVA7);
+        fpjwc.addProjectFacet(AppEngineStandardFacet.JRE7);
       }
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));
     }
-    throw new CoreException(StatusUtil.error(this, "Requires Java 8 support"));
-
   }
 
 }
