@@ -26,7 +26,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jst.common.project.facet.core.JavaFacet;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectEvent;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectEvent.Type;
@@ -34,13 +33,12 @@ import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectListener;
 import org.eclipse.wst.common.project.facet.core.events.IProjectFacetActionEvent;
 
 /**
- * Handle facet install and uninstalls, version changes, and generally anything else, and reflect
- * such changes into the {@code appengine-web.xml}. Also add/remove the {@link AppEngineWebBuilder}
- * to monitor for user changes involving the {@code <runtime>java8</runtime>} element in the
- * {@code appengine-web.xml}.
+ * Reflects facet changes to and from the {@code appengine-web.xml}. Also add/remove the
+ * {@link AppEngineWebBuilder} to monitor for user changes involving the
+ * {@code <runtime>java8</runtime>} element in the {@code appengine-web.xml}.
  */
-public class FacetChangeListener implements IFacetedProjectListener {
-  private static final Logger logger = Logger.getLogger(FacetChangeListener.class.getName());
+public class AppEngineStandardFacetChangeListener implements IFacetedProjectListener {
+  private static final Logger logger = Logger.getLogger(AppEngineStandardFacetChangeListener.class.getName());
 
   @Override
   public void handleEvent(IFacetedProjectEvent event) {
@@ -49,13 +47,12 @@ public class FacetChangeListener implements IFacetedProjectListener {
       return;
     }
     IProjectFacetActionEvent action = (IProjectFacetActionEvent) event;
-    if (!JavaFacet.FACET.equals(action.getProjectFacet())
-        && !AppEngineStandardFacet.FACET.equals(action.getProjectFacet())) {
+    if (!AppEngineStandardFacet.FACET.equals(action.getProjectFacet())) {
       return;
     }
     logger.fine("Facet change: " + action.getProjectFacet());
     IFacetedProject project = event.getProject();
-    if (!AppEngineStandardFacet.hasFacet(project)) {
+    if (event.getType() == Type.POST_UNINSTALL) {
       removeAppEngineWebBuilder(project.getProject());
       return;
     }
@@ -63,9 +60,9 @@ public class FacetChangeListener implements IFacetedProjectListener {
     IFile descriptor = findDescriptor(project);
     if (descriptor == null) {
       logger.warning(project + ": cannot find appengine-web.xml");
-        return;
-      }
-    if (project.hasProjectFacet(JavaFacet.VERSION_1_8)) {
+      return;
+    }
+    if (AppEngineStandardFacet.JRE8.equals(action.getProjectFacetVersion())) {
       AppEngineDescriptorTransform.addJava8Runtime(descriptor);
     } else {
       AppEngineDescriptorTransform.removeJava8Runtime(descriptor);

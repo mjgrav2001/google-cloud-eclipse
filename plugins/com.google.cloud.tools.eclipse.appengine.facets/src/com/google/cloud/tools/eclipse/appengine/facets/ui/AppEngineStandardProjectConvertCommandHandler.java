@@ -75,7 +75,7 @@ public class AppEngineStandardProjectConvertCommandHandler extends AbstractHandl
       MessageDialogWrapper dialogWrapper) {
     IProjectFacetVersion javaFacetVersion = facetedProject.getProjectFacetVersion(JavaFacet.FACET);
     if (javaFacetVersion != null) {
-      if (AppEngineStandardFacet.JAVA7.conflictsWith(javaFacetVersion)) {
+      if (AppEngineStandardFacet.JRE7.conflictsWith(javaFacetVersion)) {
         String installed = facetedProject.getInstalledVersion(JavaFacet.FACET).getVersionString();
 
         dialogWrapper.openInformation(
@@ -89,7 +89,7 @@ public class AppEngineStandardProjectConvertCommandHandler extends AbstractHandl
     IProjectFacetVersion webFacetVersion =
         facetedProject.getProjectFacetVersion(WebFacetUtils.WEB_FACET);
     if (webFacetVersion != null) {
-      if (AppEngineStandardFacet.JAVA7.conflictsWith(webFacetVersion)) {
+      if (AppEngineStandardFacet.JRE7.conflictsWith(webFacetVersion)) {
         String installed =
             facetedProject.getInstalledVersion(WebFacetUtils.WEB_FACET).getVersionString();
 

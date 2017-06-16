@@ -56,7 +56,7 @@ public class XmlSourceValidatorTest {
 
   @ClassRule public static TestProjectCreator appEngineStandardProject =
       new TestProjectCreator().withFacetVersions(JavaFacet.VERSION_1_7,
-          WebFacetUtils.WEB_25, AppEngineStandardFacet.JAVA7);
+          WebFacetUtils.WEB_25, AppEngineStandardFacet.JRE7);
 
   @Test
   public void testValidate_appEngineStandardFacet() throws CoreException, ValidationException {

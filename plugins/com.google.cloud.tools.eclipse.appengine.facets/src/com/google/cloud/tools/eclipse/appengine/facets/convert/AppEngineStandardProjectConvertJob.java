@@ -48,7 +48,7 @@ public class AppEngineStandardProjectConvertJob extends Job {
     try {
       AppEngineStandardFacet.installAppEngineFacet(facetedProject,
           true /* install Java and Web facets too (safe even if already installed) */,
-          subMonitor.newChild(80));
+          subMonitor.newChild(40));
       return Status.OK_STATUS;
     } catch (CoreException ex) {
       String project = facetedProject.getProject().getName();

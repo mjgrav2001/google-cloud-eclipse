@@ -10,8 +10,11 @@
        <version-comparator
              class="com.google.cloud.tools.eclipse.appengine.facets.StringVersionComparator">
        </version-comparator>
+       <default-version
+             version="JRE7">
+       </default-version>
     </project-facet>
-    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="jre7">
+    <project-facet-version facet="com.google.cloud.tools.eclipse.appengine.facets.standard" version="JRE7">
        <constraint>
           <and>
              <requires
@@ -35,7 +38,7 @@
      -->
      <facet-version-alias
            facet="com.google.cloud.tools.eclipse.appengine.facets.standard"
-           version="java7"
+           version="JRE7"
            alias="1" />
   </extension>
 
@@ -51,6 +54,12 @@
       facet="com.google.cloud.tools.eclipse.appengine.facets.standard"
       type="UNINSTALL">
       <delegate class="com.google.cloud.tools.eclipse.appengine.facets.StandardFacetUninstallDelegate"/>
+    </action>
+    <action
+      id="com.google.cloud.tools.eclipse.appengine.facets.standard.version.action"
+      facet="com.google.cloud.tools.eclipse.appengine.facets.standard"
+      type="VERSION_CHANGE">
+      <delegate class="com.google.cloud.tools.eclipse.appengine.facets.StandardFacetVersionChangeDelegate"/>
     </action>
   </extension>
 

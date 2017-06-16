@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.facets;
 
+import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -34,6 +35,7 @@ import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.internal.builder.DependencyGraphImpl;
 import org.eclipse.wst.common.componentcore.internal.builder.IDependencyGraph;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProjectWorkingCopy;
 import org.eclipse.wst.common.project.facet.core.IProjectFacet;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
@@ -49,8 +51,8 @@ public class AppEngineStandardFacet {
   public static final String ID = "com.google.cloud.tools.eclipse.appengine.facets.standard";
 
   public static final IProjectFacet FACET = ProjectFacetsManager.getProjectFacet(ID);
-  public static final IProjectFacetVersion JAVA7 = FACET.getVersion("java7");
-  public static final IProjectFacetVersion JAVA8 = FACET.getVersion("java8");
+  public static final IProjectFacetVersion JRE7 = FACET.getVersion("JRE7");
+  public static final IProjectFacetVersion JRE8 = FACET.getVersion("JRE8");
 
   static final String DEFAULT_RUNTIME_ID =
       "com.google.cloud.tools.eclipse.appengine.standard.runtime";
@@ -170,9 +172,30 @@ public class AppEngineStandardFacet {
     if (facetedProject.hasProjectFacet(FACET)) {
       return;
     }
-    FacetUtil facetUtil = new FacetUtil(facetedProject);
-    facetUtil.addFacetToBatch(JAVA7, null /* config */);
 
+    final IFacetedProjectWorkingCopy fpjwc = facetedProject.createWorkingCopy();
+    fpjwc.detect(subMonitor.newChild(20));
+    fpjwc.commitChanges(subMonitor.newChild(20));
+
+    if (facetedProject.hasProjectFacet(FACET)) {
+      // success!
+      return;
+    }
+
+    FacetUtil facetUtil = new FacetUtil(facetedProject);
+    // See if the default AppEngine Standard facet is ok
+    if (fpjwc.isFacetAvailable(FACET.getDefaultVersion())) {
+      facetUtil.addFacetToBatch(FACET.getDefaultVersion(), null);
+      fpjwc.addProjectFacet(FACET.getDefaultVersion());
+    } else {
+      IProjectFacetVersion highestVersion = fpjwc.getHighestAvailableVersion(FACET);
+      if (highestVersion == null) {
+        throw new CoreException(StatusUtil.error(AppEngineStandardFacet.class,
+            "No compatible AppEngine Standard facet found"));
+      }
+      facetUtil.addFacetToBatch(highestVersion, /* config */ null);
+      fpjwc.addProjectFacet(highestVersion);
+    }
     // https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1155
     // Instead of calling "IFacetedProject.installProjectFacet()" multiple times, we install facets
     // in a batch using "IFacetedProject.modify()" so that we hold the lock until we finish
@@ -181,8 +204,12 @@ public class AppEngineStandardFacet {
     // scheduling the second ConvertJob (triggered by installing the JSDT facet.)
 
     if (installDependentFacets) {
-      facetUtil.addJavaFacetToBatch(JavaFacet.VERSION_1_7);
-      facetUtil.addWebFacetToBatch(WebFacetUtils.WEB_25);
+      if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
+        facetUtil.addJavaFacetToBatch(JavaFacet.VERSION_1_7);
+      }
+      if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+        facetUtil.addWebFacetToBatch(WebFacetUtils.WEB_25);
+      }
     }
 
     facetUtil.install(subMonitor.newChild(90));
