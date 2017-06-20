@@ -160,4 +160,10 @@
         file-extensions="yaml,yml"
         base-type="org.eclipse.core.runtime.text" />
   </extension>
+  <extension
+        point="org.eclipse.wst.common.project.facet.core.detectors">
+     <detector
+           class="com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardJre7ProjectFacetDetector">
+     </detector>
+  </extension>
 </plugin>

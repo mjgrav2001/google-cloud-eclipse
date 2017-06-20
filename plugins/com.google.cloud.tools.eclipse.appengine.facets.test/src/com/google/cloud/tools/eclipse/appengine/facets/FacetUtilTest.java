@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.facets;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
@@ -38,6 +39,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProjectWorkingCopy;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -259,6 +261,23 @@ public class FacetUtilTest {
 
     IPath mainWebApp = FacetUtil.findMainWebAppDirectory(project);
     Assert.assertEquals(new Path("webapps/first-webapp"), mainWebApp);
+  }
+
+  @Test
+  public void testHighestSatisfyingFacet() throws CoreException {
+    IFacetedProjectWorkingCopy testProject = projectCreator.getFacetedProject().createWorkingCopy();
+    testProject.addProjectFacet(AppEngineStandardFacet.JRE7);
+    IProjectFacetVersion highestSatisfyingVersion =
+        FacetUtil.getHighestSatisfyingVersion(testProject, WebFacetUtils.WEB_FACET);
+    assertEquals(WebFacetUtils.WEB_25, highestSatisfyingVersion);
+  }
+
+  @Test
+  public void testConflictsWith() throws CoreException {
+    IFacetedProjectWorkingCopy testProject = projectCreator.getFacetedProject().createWorkingCopy();
+    testProject.addProjectFacet(AppEngineStandardFacet.JRE7);
+    assertFalse(FacetUtil.conflictsWith(testProject, WebFacetUtils.WEB_25));
+    assertTrue(FacetUtil.conflictsWith(testProject, WebFacetUtils.WEB_31));
   }
 
   private static void createEmptyFile(IProject project, IPath relativePath) throws CoreException {

@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.tools.appengine.AppEngineDescriptor;
@@ -59,7 +60,8 @@ public class ConversionTests {
     // ensure appengine-web.xml has <runtime>java8</runtime>
     IFile appengineWebXml =
         WebProjectUtil.findInWebInf(project.getProject(), new Path("appengine-web.xml"));
-    assertTrue(appengineWebXml.exists());
+    assertNotNull("appengine-web.xml is missing", appengineWebXml);
+    assertTrue("appengine-web.xml does not exist", appengineWebXml.exists());
     try (InputStream input = appengineWebXml.getContents()) {
       assertTrue(AppEngineDescriptor.parse(input).isJava8());
     }
