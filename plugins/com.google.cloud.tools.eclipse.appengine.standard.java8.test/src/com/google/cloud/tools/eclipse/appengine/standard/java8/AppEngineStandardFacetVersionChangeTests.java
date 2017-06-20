@@ -51,7 +51,8 @@ public class AppEngineStandardFacetVersionChangeTests {
 
   @Rule
   public TestProjectCreator jre8Project = new TestProjectCreator()
-      .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25, AppEngineStandardFacet.JRE8);
+      .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25,
+          AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
 
   /** Should be able to change a App Engine Standard JRE7 project to JRE8 with no other changes. */
   @Test
@@ -60,7 +61,8 @@ public class AppEngineStandardFacetVersionChangeTests {
     assertDescriptorRuntimeIsJre7(project);
 
     Set<Action> actions = new HashSet<>();
-    actions.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE8, null));
+    actions.add(new Action(Action.Type.VERSION_CHANGE,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8, null));
     project.modify(actions, null);
 
     assertDescriptorRuntimeIsJre8(project);

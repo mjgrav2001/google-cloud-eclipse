@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectEvent;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectEvent.Type;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectListener;
@@ -39,6 +40,9 @@ import org.eclipse.wst.common.project.facet.core.events.IProjectFacetActionEvent
  */
 public class AppEngineStandardFacetChangeListener implements IFacetedProjectListener {
   private static final Logger logger = Logger.getLogger(AppEngineStandardFacetChangeListener.class.getName());
+
+  static final IProjectFacetVersion APP_ENGINE_STANDARD_JRE8 =
+      AppEngineStandardFacet.FACET.getVersion("JRE8");
 
   @Override
   public void handleEvent(IFacetedProjectEvent event) {
@@ -62,7 +66,7 @@ public class AppEngineStandardFacetChangeListener implements IFacetedProjectList
       logger.warning(project + ": cannot find appengine-web.xml");
       return;
     }
-    if (AppEngineStandardFacet.JRE8.equals(action.getProjectFacetVersion())) {
+    if (APP_ENGINE_STANDARD_JRE8.equals(action.getProjectFacetVersion())) {
       AppEngineDescriptorTransform.addJava8Runtime(descriptor);
     } else {
       AppEngineDescriptorTransform.removeJava8Runtime(descriptor);

@@ -19,6 +19,7 @@ package com.google.cloud.tools.eclipse.appengine.facets;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -267,15 +268,27 @@ public class FacetUtil {
     Set<IProjectFacetVersion> installedFacetVersions = facetedProject.getProjectFacets();
     IProjectFacetVersion highestFacetVersion = null;
     for (IProjectFacetVersion facetVersion : facet.getVersions()) {
-      for (IProjectFacetVersion installed : installedFacetVersions) {
-        if (!facetVersion.conflictsWith(installed)
-            && (highestFacetVersion == null || highestFacetVersion.compareTo(facetVersion) < 0)) {
-          highestFacetVersion = facetVersion;
-        }
+      if (!conflictsWith(installedFacetVersions, facetVersion)
+          && (highestFacetVersion == null || highestFacetVersion.compareTo(facetVersion) < 0)) {
+        highestFacetVersion = facetVersion;
       }
     }
 
     return highestFacetVersion;
+  }
+
+  /**
+   * Return {@code true} if the provided facet version conflicts with any of the installed facet
+   * versions.
+   */
+  private static boolean conflictsWith(Collection<IProjectFacetVersion> installedFacetVersions,
+      IProjectFacetVersion facetVersion) {
+    for (IProjectFacetVersion installed : installedFacetVersions) {
+      if (facetVersion.conflictsWith(installed)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -284,13 +297,7 @@ public class FacetUtil {
    */
   public static boolean conflictsWith(IFacetedProjectBase facetedProject,
       IProjectFacetVersion facetVersion) {
-    Set<IProjectFacetVersion> installedFacetVersions = facetedProject.getProjectFacets();
-    for (IProjectFacetVersion installed : installedFacetVersions) {
-      if (facetVersion.conflictsWith(installed)) {
-        return true;
-      }
-    }
-    return false;
+    return conflictsWith(facetedProject.getProjectFacets(), facetVersion);
   }
 
 }
