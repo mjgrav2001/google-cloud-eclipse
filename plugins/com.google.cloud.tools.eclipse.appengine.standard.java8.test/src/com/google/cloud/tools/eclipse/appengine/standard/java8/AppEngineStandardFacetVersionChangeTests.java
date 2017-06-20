@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -53,6 +54,12 @@ public class AppEngineStandardFacetVersionChangeTests {
   public TestProjectCreator jre8Project = new TestProjectCreator()
       .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25,
           AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+
+  @Test
+  public void testJre8FacetVersionId() {
+    assertEquals("JRE8",
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8.getVersionString());
+  }
 
   /** Should be able to change a App Engine Standard JRE7 project to JRE8 with no other changes. */
   @Test

@@ -12,7 +12,7 @@ public class StandardFacetVersionChangeDelegate implements IDelegate {
   @Override
   public void execute(IProject project, IProjectFacetVersion fv, Object config,
       IProgressMonitor monitor) throws CoreException {
-
+    /* required to allow changing between JRE7 <--> JRE8 */
   }
 
 }

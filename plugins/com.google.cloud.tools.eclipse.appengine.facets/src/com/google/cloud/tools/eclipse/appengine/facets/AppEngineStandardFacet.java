@@ -198,14 +198,14 @@ public class AppEngineStandardFacet {
       facetUtil.addFacetToBatch(highestVersion, /* config */ null);
       fpjwc.addProjectFacet(highestVersion);
     }
+
     // https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1155
     // Instead of calling "IFacetedProject.installProjectFacet()" multiple times, we install facets
     // in a batch using "IFacetedProject.modify()" so that we hold the lock until we finish
     // installing all the facets. This ensures that the first ConvertJob starts installing the JSDT
     // facet only after the batch is complete, which in turn prevents the first ConvertJob from
     // scheduling the second ConvertJob (triggered by installing the JSDT facet.)
-    // FIXME: why isn't this using IFacetProjectWorkingCopy?
-
+    // FIXME: why aren't we using IFacetProjectWorkingCopy?
     if (installDependentFacets) {
       if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
         IProjectFacetVersion javaFacet =
