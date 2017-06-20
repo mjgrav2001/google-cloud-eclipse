@@ -10,9 +10,10 @@ import java.util.Comparator;
  */
 public class StringVersionComparator implements Comparator<String> {
 
-  // Although normally specified in a <code>plugin.xml</code>, the fproj framework
-  // instantiates the specified class directly and so we cannot just implement
-  // IExecutableExtensionFactory that returns Ordering.natural().
+  // Since this comparator is usually specified via plugin.xml, one would normally
+  // implement this as an IExecutableExtensionFactory that returns Ordering.natural().
+  // But the fproj framework instantiates the specified class *directly* and so we
+  // must actually implement the comparator.
 
   @Override
   public int compare(String o1, String o2) {
