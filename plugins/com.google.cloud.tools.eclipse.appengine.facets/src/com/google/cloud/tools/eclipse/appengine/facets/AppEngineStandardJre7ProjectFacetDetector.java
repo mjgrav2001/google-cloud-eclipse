@@ -35,6 +35,7 @@ public class AppEngineStandardJre7ProjectFacetDetector extends ProjectFacetDetec
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
       if (descriptor.getRuntime() == null || !"java7".equals(descriptor.getRuntime())) {
         logger.fine(fpjwc.getProjectName() + ": appengine-web.xml is not java7 so skipping");
+        return;
       }
       logger.fine(fpjwc.getProjectName() + ": appengine-web.xml has java7 runtime");
       fpjwc.addProjectFacet(AppEngineStandardFacet.JRE7);
