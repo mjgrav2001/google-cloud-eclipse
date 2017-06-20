@@ -53,7 +53,7 @@ public class AppEngineStandardFacet {
 
   public static final IProjectFacet FACET = ProjectFacetsManager.getProjectFacet(ID);
   public static final IProjectFacetVersion JRE7 = FACET.getVersion("JRE7");
-  public static final IProjectFacetVersion JRE8 = FACET.getVersion("JRE8");
+  // public static final IProjectFacetVersion JRE8 = FACET.getVersion("JRE8");
 
   static final String DEFAULT_RUNTIME_ID =
       "com.google.cloud.tools.eclipse.appengine.standard.runtime";
@@ -208,12 +208,14 @@ public class AppEngineStandardFacet {
 
     if (installDependentFacets) {
       if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
-        facetUtil
-            .addJavaFacetToBatch(FacetUtil.getHighestSatisfyingVersion(fpjwc, JavaFacet.FACET));
+        IProjectFacetVersion javaFacet =
+            FacetUtil.getHighestSatisfyingVersion(fpjwc, JavaFacet.FACET);
+        facetUtil.addJavaFacetToBatch(javaFacet);
       }
       if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-        facetUtil.addWebFacetToBatch(
-            FacetUtil.getHighestSatisfyingVersion(fpjwc, WebFacetUtils.WEB_FACET));
+        IProjectFacetVersion webFacet =
+            FacetUtil.getHighestSatisfyingVersion(fpjwc, WebFacetUtils.WEB_FACET);
+        facetUtil.addWebFacetToBatch(webFacet);
       }
     }
 

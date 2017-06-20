@@ -38,7 +38,7 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
         logger.fine(fpjwc.getProjectName() + ": appengine-web.xml is not java8 so skipping");
       }
       logger.fine(fpjwc.getProjectName() + ": appengine-web.xml has runtime=java8");
-      fpjwc.addProjectFacet(AppEngineStandardFacet.JRE8);
+      fpjwc.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
       if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
         logger.fine(fpjwc.getProjectName() + ": setting Java 8 facet");
         fpjwc.addProjectFacet(JavaFacet.VERSION_1_8);

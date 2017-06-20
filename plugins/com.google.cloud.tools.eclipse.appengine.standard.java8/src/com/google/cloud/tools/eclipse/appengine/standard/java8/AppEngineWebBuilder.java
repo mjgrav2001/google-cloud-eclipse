@@ -81,7 +81,8 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
       IProgressMonitor monitor) {
     try (InputStream input = appEngineWebDescriptor.getContents()) {
       boolean hasJava8Runtime = AppEngineDescriptor.parse(input).isJava8();
-      boolean hasAppEngineJava8Facet = project.hasProjectFacet(AppEngineStandardFacet.JRE8);
+      boolean hasAppEngineJava8Facet =
+          project.hasProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
       // if not the same, then we update the facet to match the appengine-web.xml
       if (hasAppEngineJava8Facet != hasJava8Runtime) {
         Set<Action> updates = new HashSet<>();
@@ -92,7 +93,8 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
         // (https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html)
         boolean isMaven = MavenUtils.hasMavenNature(project.getProject());
         if (hasJava8Runtime) {
-          updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE8, null));
+          updates.add(new Action(Action.Type.VERSION_CHANGE,
+              AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8, null));
           if(!isMaven) {
             updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_8, null));
           }

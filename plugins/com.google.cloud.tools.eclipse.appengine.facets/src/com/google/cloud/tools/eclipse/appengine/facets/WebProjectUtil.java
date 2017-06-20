@@ -65,7 +65,8 @@ public class WebProjectUtil {
     }
     // Otherwise it's seemingly fair game
     for (String possibleWebInfContainer : DEFAULT_WEB_PATHS) {
-      IFolder defaultLocation = project.getFolder(possibleWebInfContainer).getFolder(WEB_INF);
+      IPath subPath = new Path(possibleWebInfContainer).append(WEB_INF);
+      IFolder defaultLocation = project.getFolder(subPath);
       if (defaultLocation.exists()) {
         return defaultLocation;
       }
