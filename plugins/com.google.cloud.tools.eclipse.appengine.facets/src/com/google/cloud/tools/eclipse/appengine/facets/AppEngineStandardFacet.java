@@ -22,6 +22,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.resources.IProject;
@@ -182,13 +183,14 @@ public class AppEngineStandardFacet {
       return;
     }
 
+    Set<IProjectFacet> previousFixedFacets = fpjwc.getFixedProjectFacets();
     FacetUtil facetUtil = new FacetUtil(facetedProject);
     // See if the default AppEngine Standard facet is ok
-    if (fpjwc.isFacetAvailable(FACET.getDefaultVersion())) {
+    if (!FacetUtil.conflictsWith(fpjwc, FACET.getDefaultVersion())) {
       facetUtil.addFacetToBatch(FACET.getDefaultVersion(), null);
       fpjwc.addProjectFacet(FACET.getDefaultVersion());
     } else {
-      IProjectFacetVersion highestVersion = fpjwc.getHighestAvailableVersion(FACET);
+      IProjectFacetVersion highestVersion = FacetUtil.getHighestSatisfyingVersion(fpjwc, FACET);
       if (highestVersion == null) {
         throw new CoreException(StatusUtil.error(AppEngineStandardFacet.class,
             "No compatible AppEngine Standard facet found"));
@@ -202,13 +204,16 @@ public class AppEngineStandardFacet {
     // installing all the facets. This ensures that the first ConvertJob starts installing the JSDT
     // facet only after the batch is complete, which in turn prevents the first ConvertJob from
     // scheduling the second ConvertJob (triggered by installing the JSDT facet.)
+    // FIXME: why isn't this using IFacetProjectWorkingCopy?
 
     if (installDependentFacets) {
       if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
-        facetUtil.addJavaFacetToBatch(JavaFacet.VERSION_1_7);
+        facetUtil
+            .addJavaFacetToBatch(FacetUtil.getHighestSatisfyingVersion(fpjwc, JavaFacet.FACET));
       }
       if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-        facetUtil.addWebFacetToBatch(WebFacetUtils.WEB_25);
+        facetUtil.addWebFacetToBatch(
+            FacetUtil.getHighestSatisfyingVersion(fpjwc, WebFacetUtils.WEB_FACET));
       }
     }
 

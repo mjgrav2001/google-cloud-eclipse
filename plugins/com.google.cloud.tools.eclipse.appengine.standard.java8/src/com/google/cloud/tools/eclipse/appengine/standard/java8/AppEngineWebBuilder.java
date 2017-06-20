@@ -85,8 +85,10 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
       // if not the same, then we update the facet to match the appengine-web.xml
       if (hasAppEngineJava8Facet != hasJava8Runtime) {
         Set<Action> updates = new HashSet<>();
-        // see https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1941
-        // and setting compiler settings is difficult to manage in a consistent way
+        // See https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1941
+        // We don't change the Java Facet for Maven builds as the compiler settings are
+        // controlled by settings in the pom.xml, and setting compiler settings is difficult to
+        // manage in a consistent way
         // (https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html)
         boolean isMaven = MavenUtils.hasMavenNature(project.getProject());
         if (hasJava8Runtime) {

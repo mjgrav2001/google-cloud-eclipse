@@ -16,12 +16,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProjectWorkingCopy;
-import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetDetector;
 import org.xml.sax.SAXException;
 
-public class Java8ProjectFacetDetector extends ProjectFacetDetector {
-  private static final Logger logger = Logger.getLogger(Java8ProjectFacetDetector.class.getName());
+public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetector {
+  private static final Logger logger = Logger.getLogger(AppEngineStandardJre8ProjectFacetDetector.class.getName());
 
   @Override
   public void detect(IFacetedProjectWorkingCopy fpjwc, IProgressMonitor monitor)
@@ -35,31 +34,21 @@ public class Java8ProjectFacetDetector extends ProjectFacetDetector {
     }
     try (InputStream content = appEngineWebXml.getContents()) {
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
-      IProjectFacetVersion javaFacetVersion = fpjwc.getProjectFacetVersion(JavaFacet.FACET);
-      // IProjectFacetVersion dynamicWebFacetVersion =
-      // fpjwc.getProjectFacetVersion(WebFacetUtils.WEB_FACET);
-      // Action javaInstallAction = fpjwc.getProjectFacetAction(JavaFacet.FACET);
-      if (descriptor.isJava8()) {
-        logger
-            .fine(fpjwc.getProjectName() + ": appengine-web.xml has runtime=java8");
-        if (!JavaFacet.VERSION_1_8.equals(javaFacetVersion)) {
-          logger.fine(fpjwc.getProjectName() + ": setting Java 8 facet");
-          fpjwc.addProjectFacet(JavaFacet.VERSION_1_8);
-        }
-        if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-          logger.fine(fpjwc.getProjectName() + ": setting Dynamic Web 3.1 facet");
-          fpjwc.addProjectFacet(WebFacetUtils.WEB_31);
-        }
-        fpjwc.addProjectFacet(AppEngineStandardFacet.JRE8);
-      } else {
-        logger.fine(
-            fpjwc.getProjectName() + ": appengine-web.xml is not java8 so setting Java 7 facet");
-        fpjwc.addProjectFacet(JavaFacet.VERSION_1_7);
-        fpjwc.addProjectFacet(AppEngineStandardFacet.JRE7);
+      if (!descriptor.isJava8()) {
+        logger.fine(fpjwc.getProjectName() + ": appengine-web.xml is not java8 so skipping");
+      }
+      logger.fine(fpjwc.getProjectName() + ": appengine-web.xml has runtime=java8");
+      fpjwc.addProjectFacet(AppEngineStandardFacet.JRE8);
+      if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
+        logger.fine(fpjwc.getProjectName() + ": setting Java 8 facet");
+        fpjwc.addProjectFacet(JavaFacet.VERSION_1_8);
+      }
+      if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+        logger.fine(fpjwc.getProjectName() + ": setting Dynamic Web 3.1 facet");
+        fpjwc.addProjectFacet(WebFacetUtils.WEB_31);
       }
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));
     }
   }
-
 }

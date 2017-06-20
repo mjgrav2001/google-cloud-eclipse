@@ -107,7 +107,7 @@
   <extension
         point="org.eclipse.wst.common.project.facet.core.detectors">
      <detector
-           class="com.google.cloud.tools.eclipse.appengine.standard.java8.Java8ProjectFacetDetector">
+           class="com.google.cloud.tools.eclipse.appengine.standard.java8.AppEngineStandardJre8ProjectFacetDetector">
      </detector>
   </extension>
 </plugin>

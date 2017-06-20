@@ -48,6 +48,9 @@ import org.eclipse.wst.common.componentcore.internal.builder.IDependencyGraph;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProjectBase;
+import org.eclipse.wst.common.project.facet.core.IFacetedProjectWorkingCopy;
+import org.eclipse.wst.common.project.facet.core.IProjectFacet;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 
 /**
@@ -251,6 +254,43 @@ public class FacetUtil {
       // Our attempt to find folders failed, but don't error out.
     }
     return webInfFolders;
+  }
+
+  /**
+   * Return the highest {@link IFacetProjectVersion version of a facet} that is supported with the
+   * other installed {@link IFacetProjectVersion facet versions} on a project. Somewhat like
+   * {@link IFacetedProjectWorkingCopy#getHighestAvailableVersion(IProjectFacet)} when all installed
+   * facet versions are treated as fixed.
+   */
+  public static IProjectFacetVersion getHighestSatisfyingVersion(IFacetedProjectBase facetedProject,
+      IProjectFacet facet) {
+    Set<IProjectFacetVersion> installedFacetVersions = facetedProject.getProjectFacets();
+    IProjectFacetVersion highestFacetVersion = null;
+    for (IProjectFacetVersion facetVersion : facet.getVersions()) {
+      for (IProjectFacetVersion installed : installedFacetVersions) {
+        if (!facetVersion.conflictsWith(installed)
+            && (highestFacetVersion == null || highestFacetVersion.compareTo(facetVersion) < 0)) {
+          highestFacetVersion = facetVersion;
+        }
+      }
+    }
+
+    return highestFacetVersion;
+  }
+
+  /**
+   * Return {@code true} if the provided facet version cannot be installed in the faceted project
+   * due to conflicts with existing installed facet versions.
+   */
+  public static boolean conflictsWith(IFacetedProjectBase facetedProject,
+      IProjectFacetVersion facetVersion) {
+    Set<IProjectFacetVersion> installedFacetVersions = facetedProject.getProjectFacets();
+    for (IProjectFacetVersion installed : installedFacetVersions) {
+      if (facetVersion.conflictsWith(installed)) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }
