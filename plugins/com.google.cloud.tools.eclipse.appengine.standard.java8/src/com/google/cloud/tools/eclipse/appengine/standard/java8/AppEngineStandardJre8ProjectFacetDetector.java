@@ -2,7 +2,6 @@
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
 import com.google.cloud.tools.appengine.AppEngineDescriptor;
-import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import java.io.IOException;
@@ -36,6 +35,7 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
       if (!descriptor.isJava8()) {
         logger.fine(fpjwc.getProjectName() + ": appengine-web.xml is not java8 so skipping");
+        return;
       }
       logger.fine(fpjwc.getProjectName() + ": appengine-web.xml has runtime=java8");
       fpjwc.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
