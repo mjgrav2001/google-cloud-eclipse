@@ -174,9 +174,9 @@ public class AppEngineStandardFacet {
       return;
     }
 
-    final IFacetedProjectWorkingCopy fpjwc = facetedProject.createWorkingCopy();
-    fpjwc.detect(subMonitor.newChild(20));
-    fpjwc.commitChanges(subMonitor.newChild(20));
+    final IFacetedProjectWorkingCopy workingCopy = facetedProject.createWorkingCopy();
+    workingCopy.detect(subMonitor.newChild(20));
+    workingCopy.commitChanges(subMonitor.newChild(20));
 
     if (facetedProject.hasProjectFacet(FACET)) {
       // success!
@@ -184,20 +184,20 @@ public class AppEngineStandardFacet {
     }
 
     // we continue to update fpjwc to use FacetUtil.getHighestSatisfyingVersion()
-    Set<IProjectFacet> previousFixedFacets = fpjwc.getFixedProjectFacets();
+    Set<IProjectFacet> previousFixedFacets = workingCopy.getFixedProjectFacets();
     FacetUtil facetUtil = new FacetUtil(facetedProject);
     // See if the default AppEngine Standard facet is ok
-    if (!FacetUtil.conflictsWith(fpjwc, FACET.getDefaultVersion())) {
+    if (!FacetUtil.conflictsWith(workingCopy, FACET.getDefaultVersion())) {
       facetUtil.addFacetToBatch(FACET.getDefaultVersion(), null);
-      fpjwc.addProjectFacet(FACET.getDefaultVersion());
+      workingCopy.addProjectFacet(FACET.getDefaultVersion());
     } else {
-      IProjectFacetVersion highestVersion = FacetUtil.getHighestSatisfyingVersion(fpjwc, FACET);
+      IProjectFacetVersion highestVersion = FacetUtil.getHighestSatisfyingVersion(workingCopy, FACET);
       if (highestVersion == null) {
         throw new CoreException(StatusUtil.error(AppEngineStandardFacet.class,
             "No compatible AppEngine Standard facet found"));
       }
       facetUtil.addFacetToBatch(highestVersion, /* config */ null);
-      fpjwc.addProjectFacet(highestVersion);
+      workingCopy.addProjectFacet(highestVersion);
     }
 
     // https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1155
@@ -208,14 +208,14 @@ public class AppEngineStandardFacet {
     // scheduling the second ConvertJob (triggered by installing the JSDT facet.)
     // FIXME: why aren't we using IFacetProjectWorkingCopy?
     if (installDependentFacets) {
-      if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
+      if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
         IProjectFacetVersion javaFacet =
-            FacetUtil.getHighestSatisfyingVersion(fpjwc, JavaFacet.FACET);
+            FacetUtil.getHighestSatisfyingVersion(workingCopy, JavaFacet.FACET);
         facetUtil.addJavaFacetToBatch(javaFacet);
       }
-      if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+      if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
         IProjectFacetVersion webFacet =
-            FacetUtil.getHighestSatisfyingVersion(fpjwc, WebFacetUtils.WEB_FACET);
+            FacetUtil.getHighestSatisfyingVersion(workingCopy, WebFacetUtils.WEB_FACET);
         facetUtil.addWebFacetToBatch(webFacet);
       }
     }

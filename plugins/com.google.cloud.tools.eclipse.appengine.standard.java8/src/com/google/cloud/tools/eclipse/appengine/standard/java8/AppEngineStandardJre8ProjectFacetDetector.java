@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
@@ -22,31 +37,31 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
   private static final Logger logger = Logger.getLogger(AppEngineStandardJre8ProjectFacetDetector.class.getName());
 
   @Override
-  public void detect(IFacetedProjectWorkingCopy fpjwc, IProgressMonitor monitor)
+  public void detect(IFacetedProjectWorkingCopy workingCopy, IProgressMonitor monitor)
       throws CoreException {
     SubMonitor progress = SubMonitor.convert(monitor, 10);
     IFile appEngineWebXml =
-        WebProjectUtil.findInWebInf(fpjwc.getProject(), new Path("appengine-web.xml"));
+        WebProjectUtil.findInWebInf(workingCopy.getProject(), new Path("appengine-web.xml"));
     if (appEngineWebXml == null || !appEngineWebXml.exists()) {
-      logger.fine("skipping " + fpjwc.getProjectName() + ": no appengine-web.xml found");
+      logger.fine("skipping " + workingCopy.getProjectName() + ": no appengine-web.xml found");
       return;
     }
     try (InputStream content = appEngineWebXml.getContents()) {
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
       if (!descriptor.isJava8()) {
-        logger.fine("skipping " + fpjwc.getProjectName() + ": appengine-web.xml is not java8");
+        logger.fine("skipping " + workingCopy.getProjectName() + ": appengine-web.xml is not java8");
         return;
       }
-      logger.fine(fpjwc.getProjectName() + ": appengine-web.xml has runtime=java8");
-      fpjwc.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
-      if (!fpjwc.hasProjectFacet(JavaFacet.FACET)) {
-        logger.fine(fpjwc.getProjectName() + ": setting Java 8 facet");
-        fpjwc.addProjectFacet(JavaFacet.VERSION_1_8);
+      logger.fine(workingCopy.getProjectName() + ": appengine-web.xml has runtime=java8");
+      workingCopy.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+      if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
+        logger.fine(workingCopy.getProjectName() + ": setting Java 8 facet");
+        workingCopy.addProjectFacet(JavaFacet.VERSION_1_8);
       }
-      if (!fpjwc.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+      if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
         // FIXME: attempt to detect the version from web.xml? what if it doesn't exist?
-        logger.fine(fpjwc.getProjectName() + ": setting Dynamic Web 3.1 facet");
-        fpjwc.addProjectFacet(WebFacetUtils.WEB_31);
+        logger.fine(workingCopy.getProjectName() + ": setting Dynamic Web 3.1 facet");
+        workingCopy.addProjectFacet(WebFacetUtils.WEB_31);
       }
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));

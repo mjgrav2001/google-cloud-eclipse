@@ -42,8 +42,8 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 /**
- * Test changing the App Engine Standard Facet results in appropriate {@code <runtime>} changes in
- * the {@code appengine-web.xml}.
+ * Tests that changing the App Engine Standard Facet results in appropriate {@code <runtime>}
+ * changes in the {@code appengine-web.xml}.
  */
 public class AppEngineStandardFacetVersionChangeTests {
   @Rule
@@ -61,7 +61,7 @@ public class AppEngineStandardFacetVersionChangeTests {
         AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8.getVersionString());
   }
 
-  /** Should be able to change a App Engine Standard JRE7 project to JRE8 with no other changes. */
+  /** Should be able to change an App Engine Standard JRE7 project to JRE8 with no other changes. */
   @Test
   public void testChange_AESJ7_AESJ8() throws CoreException, IOException, SAXException {
     IFacetedProject project = jre7Project.getFacetedProject();
