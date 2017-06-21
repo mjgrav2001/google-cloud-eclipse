@@ -69,7 +69,7 @@ public class WebProjectUtil {
       // should be @NonNull
       IFolder defaultLocation = project.getFolder(possibleWebInfContainer);
       if (defaultLocation != null && defaultLocation.exists()) {
-        defaultLocation = project.getFolder(WEB_INF);
+        defaultLocation = defaultLocation.getFolder(WEB_INF);
         if (defaultLocation != null && defaultLocation.exists()) {
           return defaultLocation;
         }
