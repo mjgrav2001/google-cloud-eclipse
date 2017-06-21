@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.facets;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,8 @@ public class WebProjectUtil {
   public static final String DEFAULT_WEB_PATH = "src/main/webapp";
 
   /** All possible top-level locations for WEB_INF */
-  private static final String[] DEFAULT_WEB_PATHS = {DEFAULT_WEB_PATH, "WebContent", "war", "web"};
+  private static final List<String> DEFAULT_WEB_PATHS =
+      ImmutableList.of(DEFAULT_WEB_PATH, "WebContent", "war", "web");
 
   static final String WEB_INF = "WEB-INF";
 
