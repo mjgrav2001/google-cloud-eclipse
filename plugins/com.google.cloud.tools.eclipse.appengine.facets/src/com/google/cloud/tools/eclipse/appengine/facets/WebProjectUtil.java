@@ -65,10 +65,14 @@ public class WebProjectUtil {
     }
     // Otherwise it's seemingly fair game
     for (String possibleWebInfContainer : DEFAULT_WEB_PATHS) {
-      IPath subPath = new Path(possibleWebInfContainer).append(WEB_INF);
-      IFolder defaultLocation = project.getFolder(subPath);
-      if (defaultLocation.exists()) {
-        return defaultLocation;
+      // simplify mocking: get the location as two parts and check for null despite that getFolder()
+      // should be @NonNull
+      IFolder defaultLocation = project.getFolder(possibleWebInfContainer);
+      if (defaultLocation != null && defaultLocation.exists()) {
+        defaultLocation = project.getFolder(WEB_INF);
+        if (defaultLocation != null && defaultLocation.exists()) {
+          return defaultLocation;
+        }
       }
     }
     return null;
