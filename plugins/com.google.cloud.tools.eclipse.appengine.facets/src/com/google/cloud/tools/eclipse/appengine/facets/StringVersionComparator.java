@@ -1,12 +1,13 @@
 
 package com.google.cloud.tools.eclipse.appengine.facets;
 
-import com.google.common.collect.Ordering;
 import java.util.Comparator;
 
 /**
- * A {@link Comparator<String>} for the Faceted Project framework that compares versions expressed
- * as strings.
+ * A {@link Comparator<String>} for the Faceted Project framework that compares versions that are
+ * strings, like "JRE7" vs "JRE8", using the natural string ordering. Not intended for versions that
+ * have some numeric meaning (e.g., 1.2.0): use the standard Faceted Project
+ * {@link org.eclipse.wst.common.project.facet.core.DefaultVersionComparator}) comparator instead.
  */
 public class StringVersionComparator implements Comparator<String> {
 
@@ -17,7 +18,7 @@ public class StringVersionComparator implements Comparator<String> {
 
   @Override
   public int compare(String o1, String o2) {
-    return Ordering.natural().compare(o1, o2);
+    return o1.compareTo(o2);
   }
 
 }

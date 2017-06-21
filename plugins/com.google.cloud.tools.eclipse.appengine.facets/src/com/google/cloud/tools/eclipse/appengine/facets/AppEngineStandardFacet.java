@@ -52,8 +52,8 @@ public class AppEngineStandardFacet {
   public static final String ID = "com.google.cloud.tools.eclipse.appengine.facets.standard";
 
   public static final IProjectFacet FACET = ProjectFacetsManager.getProjectFacet(ID);
+  // See AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8 too
   public static final IProjectFacetVersion JRE7 = FACET.getVersion("JRE7");
-  // public static final IProjectFacetVersion JRE8 = FACET.getVersion("JRE8");
 
   static final String DEFAULT_RUNTIME_ID =
       "com.google.cloud.tools.eclipse.appengine.standard.runtime";
@@ -183,6 +183,7 @@ public class AppEngineStandardFacet {
       return;
     }
 
+    // we continue to update fpjwc to use FacetUtil.getHighestSatisfyingVersion()
     Set<IProjectFacet> previousFixedFacets = fpjwc.getFixedProjectFacets();
     FacetUtil facetUtil = new FacetUtil(facetedProject);
     // See if the default AppEngine Standard facet is ok
