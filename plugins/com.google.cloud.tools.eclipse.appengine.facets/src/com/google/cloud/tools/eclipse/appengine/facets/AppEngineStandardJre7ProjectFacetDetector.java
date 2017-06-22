@@ -40,27 +40,38 @@ public class AppEngineStandardJre7ProjectFacetDetector extends ProjectFacetDetec
   public void detect(IFacetedProjectWorkingCopy workingCopy, IProgressMonitor monitor)
       throws CoreException {
     SubMonitor progress = SubMonitor.convert(monitor, 10);
+    String projectName = workingCopy.getProjectName();
+
     IFile appEngineWebXml =
         WebProjectUtil.findInWebInf(workingCopy.getProject(), new Path("appengine-web.xml"));
     if (appEngineWebXml == null || !appEngineWebXml.exists()) {
-      logger.fine("skipping " + workingCopy.getProjectName() + ": no appengine-web.xml found");
+      logger.fine("skipping " + projectName + ": no appengine-web.xml found");
       return;
     }
     try (InputStream content = appEngineWebXml.getContents()) {
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
-      if (descriptor.getRuntime() == null || !"java7".equals(descriptor.getRuntime())) {
-        logger.fine("skipping " + workingCopy.getProjectName() + ": appengine-web.xml is not java7");
+      if (descriptor.getRuntime() != null && !"java7".equals(descriptor.getRuntime())) {
+        logger.fine("skipping " + projectName + ": appengine-web.xml is not java7");
         return;
       }
-      logger.fine(workingCopy.getProjectName() + ": appengine-web.xml has java7 runtime");
+      
+      logger.fine(projectName + ": appengine-web.xml has java7 runtime");
       workingCopy.addProjectFacet(AppEngineStandardFacet.JRE7);
+
       if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
-        logger.fine(workingCopy.getProjectName() + ": setting Java 7 facet");
+        logger.fine(projectName + ": setting Java 7 facet");
+        Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
         workingCopy.addProjectFacet(JavaFacet.VERSION_1_7);
+        workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
       }
+
       if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-        logger.fine(workingCopy.getProjectName() + ": setting Dynamic Web 2.5 facet");
+        logger.fine(projectName + ": setting Dynamic Web 2.5 facet");
+
+        Object webModel =
+            FacetUtil.createWebFacetDataModel(appEngineWebXml.getParent().getParent());
         workingCopy.addProjectFacet(WebFacetUtils.WEB_25);
+        workingCopy.setProjectFacetActionConfig(WebFacetUtils.WEB_FACET, webModel);
       }
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));

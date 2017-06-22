@@ -71,6 +71,26 @@ public class FacetUtil {
   }
 
   /**
+   * Create a Java configuration for the provided project.
+   */
+  public static JavaFacetInstallConfig createJavaDataModel(IProject project) {
+    JavaFacetInstallConfig javaConfig = new JavaFacetInstallConfig();
+    List<IPath> sourcePaths = new ArrayList<>();
+
+    // TODO: https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/490
+    if (project.getFolder("src/main/java").exists()) {
+      sourcePaths.add(new Path("src/main/java"));
+    }
+
+    if (project.getFolder("src/test/java").exists()) {
+      sourcePaths.add(new Path("src/test/java"));
+    }
+
+    javaConfig.setSourceFolders(sourcePaths);
+    return javaConfig;
+  }
+
+  /**
    * Configures and adds an install action for {@code javaFacet} to the list of actions performed
    * when {@link FacetUtil#install(IProgressMonitor)} is called, if {@code javaFacet} does not
    * already exist in the configured project.
@@ -87,20 +107,7 @@ public class FacetUtil {
       return this;
     }
 
-    JavaFacetInstallConfig javaConfig = new JavaFacetInstallConfig();
-    List<IPath> sourcePaths = new ArrayList<>();
-
-    IProject project = facetedProject.getProject();
-    // TODO: https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/490
-    if (project.getFolder("src/main/java").exists()) {
-      sourcePaths.add(new Path("src/main/java"));
-    }
-
-    if (project.getFolder("src/test/java").exists()) {
-      sourcePaths.add(new Path("src/test/java"));
-    }
-
-    javaConfig.setSourceFolders(sourcePaths);
+    JavaFacetInstallConfig javaConfig = createJavaDataModel(facetedProject.getProject());
     facetInstallSet.add(new IFacetedProject.Action(
         IFacetedProject.Action.Type.INSTALL, javaFacet, javaConfig));
     return this;
@@ -124,6 +131,7 @@ public class FacetUtil {
       return this;
     }
 
+    // FIXME: should this try to find web.xml first?
     String webAppDirectory = "src/main/webapp";
     if (overlapsWithJavaSourcePaths(facetedProject, Path.fromPortableString(webAppDirectory))) {
       logger.info("Default webapp directory overlaps source directory; using WebContent");
@@ -134,14 +142,31 @@ public class FacetUtil {
       webAppDirectory = webAppDirectoryFound.toString();
     }
 
+    IDataModel webModel = createWebFacetDataModel(webAppDirectory);
+    facetInstallSet
+        .add(new IFacetedProject.Action(IFacetedProject.Action.Type.INSTALL, webFacet, webModel));
+    return this;
+  }
+
+  /**
+   * Create a Dynamic Web Facet configuration. The {@code webappFolder} is the location that holds
+   * the {@code WEB-INF/web.xml}.
+   */
+  public static IDataModel createWebFacetDataModel(IContainer webappFolder) {
+    return createWebFacetDataModel(webappFolder.getProjectRelativePath().toString());
+  }
+
+  /**
+   * Create a Dynamic Web Facet configuration.
+   */
+  public static IDataModel createWebFacetDataModel(String webInfFolder) {
     IDataModel webModel = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
     webModel.setBooleanProperty(IJ2EEModuleFacetInstallDataModelProperties.ADD_TO_EAR, false);
     webModel.setBooleanProperty(IJ2EEFacetInstallDataModelProperties.GENERATE_DD, true);
-    webModel.setStringProperty(IWebFacetInstallDataModelProperties.CONFIG_FOLDER, webAppDirectory);
-    facetInstallSet.add(new IFacetedProject.Action(
-        IFacetedProject.Action.Type.INSTALL, webFacet, webModel));
-    return this;
+    webModel.setStringProperty(IWebFacetInstallDataModelProperties.CONFIG_FOLDER, webInfFolder);
+    return webModel;
   }
+
 
   /**
    * Return true if the given project is a Java project and has a source path that overlaps with the

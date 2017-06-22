@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
 import com.google.cloud.tools.appengine.AppEngineDescriptor;
+import com.google.cloud.tools.eclipse.appengine.facets.FacetUtil;
 import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import java.io.IOException;
@@ -42,26 +43,35 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
     SubMonitor progress = SubMonitor.convert(monitor, 10);
     IFile appEngineWebXml =
         WebProjectUtil.findInWebInf(workingCopy.getProject(), new Path("appengine-web.xml"));
+    String projectName = workingCopy.getProjectName();
     if (appEngineWebXml == null || !appEngineWebXml.exists()) {
-      logger.fine("skipping " + workingCopy.getProjectName() + ": no appengine-web.xml found");
+      logger.fine("skipping " + projectName + ": no appengine-web.xml found");
       return;
     }
     try (InputStream content = appEngineWebXml.getContents()) {
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
       if (!descriptor.isJava8()) {
-        logger.fine("skipping " + workingCopy.getProjectName() + ": appengine-web.xml is not java8");
+        logger.fine("skipping " + projectName + ": appengine-web.xml is not java8");
         return;
       }
-      logger.fine(workingCopy.getProjectName() + ": appengine-web.xml has runtime=java8");
+
+      logger.fine(projectName + ": appengine-web.xml has runtime=java8");
       workingCopy.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+
       if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
-        logger.fine(workingCopy.getProjectName() + ": setting Java 8 facet");
+        logger.fine(projectName + ": setting Java 8 facet");
+        Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
         workingCopy.addProjectFacet(JavaFacet.VERSION_1_8);
+        workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
       }
+
       if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
         // FIXME: attempt to detect the version from web.xml? what if it doesn't exist?
-        logger.fine(workingCopy.getProjectName() + ": setting Dynamic Web 3.1 facet");
+        logger.fine(projectName + ": setting Dynamic Web 3.1 facet");
+        Object webModel =
+            FacetUtil.createWebFacetDataModel(appEngineWebXml.getParent().getParent());
         workingCopy.addProjectFacet(WebFacetUtils.WEB_31);
+        workingCopy.setProjectFacetActionConfig(WebFacetUtils.WEB_FACET, webModel);
       }
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));
