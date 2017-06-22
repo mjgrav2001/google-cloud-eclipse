@@ -78,14 +78,15 @@ public class NewMavenBasedAppEngineProjectWizardTest extends BaseProjectTest {
 
   /** Create a project with the given parameters. */
   private void createAndCheck(String artifactId, String location, String packageName,
-      String[] projectFiles) throws CoreException {
+      String[] projectFiles) throws CoreException, IOException {
     assertFalse(projectExists(artifactId));
 
     project = SwtBotAppEngineActions.createMavenWebAppProject(bot, artifactId, location,
         packageName, "com.google.groupId", artifactId);
     assertTrue(project.exists());
     if (location != null) {
-      assertEquals(new File(location).toPath(), project.getLocation().toFile().toPath());
+      assertEquals(new File(location).getCanonicalPath(),
+          project.getLocation().toFile().getCanonicalPath());
     }
 
     IFacetedProject facetedProject = ProjectFacetsManager.create(project);
