@@ -22,7 +22,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.resources.IProject;
@@ -184,7 +183,6 @@ public class AppEngineStandardFacet {
     }
 
     // we continue to update fpjwc to use FacetUtil.getHighestSatisfyingVersion()
-    Set<IProjectFacet> previousFixedFacets = workingCopy.getFixedProjectFacets();
     FacetUtil facetUtil = new FacetUtil(facetedProject);
     // See if the default AppEngine Standard facet is ok
     if (!FacetUtil.conflictsWith(workingCopy, FACET.getDefaultVersion())) {
