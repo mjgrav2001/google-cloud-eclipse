@@ -85,7 +85,6 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
           project.hasProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
       // if not the same, then we update the facet to match the appengine-web.xml
       if (hasAppEngineJava8Facet != hasJava8Runtime) {
-        Set<Action> updates = new HashSet<>();
         // See https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1941
         // We don't change the Java Facet for Maven builds as the compiler settings are
         // controlled by settings in the pom.xml, and setting compiler settings is difficult to
@@ -93,27 +92,54 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
         // (https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html)
         boolean isMaven = MavenUtils.hasMavenNature(project.getProject());
         if (hasJava8Runtime) {
-          updates.add(new Action(Action.Type.VERSION_CHANGE,
-              AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8, null));
-          if(!isMaven) {
-            updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_8, null));
-          }
+          setupForJava8Runtime(project, isMaven, monitor);
         } else {
-          updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE7, null));
-          if(!isMaven) {
-            updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_7, null));
-            // FIXME: whattodo if DWP > 2.5? Can't downgrade version directly
-            // may need to uninstall AES+DWP and then re-install
-          }
+          setupForJava7Runtime(project, isMaven, monitor);
         }
-        logger.fine(getProject() + ": changing facets: " + updates);
-        project.modify(updates, monitor);
       }
     } catch (SAXException ex) {
       // Parsing failed due to malformed XML; just don't check the value now.
     } catch (CoreException | IOException ex) {
       logger.log(Level.SEVERE, getProject() + ": error updating facets", ex);
     }
+  }
+
+  /**
+   * @param project
+   * @param isMaven
+   * @param monitor
+   * @throws CoreException
+   */
+  private void setupForJava7Runtime(IFacetedProject project, boolean isMaven,
+      IProgressMonitor monitor) throws CoreException {
+    Set<Action> updates = new HashSet<>();
+    updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE7, null));
+    if (!isMaven) {
+      updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_7, null));
+      // FIXME: whattodo if DWP > 2.5? Can't downgrade version directly
+      // may need to uninstall AES+DWP and then re-install
+    }
+    logger.fine(getProject() + ": changing facets: " + updates);
+    project.modify(updates, monitor);
+
+  }
+
+  /**
+   * @param project
+   * @param isMaven
+   * @param monitor
+   * @throws CoreException
+   */
+  private void setupForJava8Runtime(IFacetedProject project, boolean isMaven,
+      IProgressMonitor monitor) throws CoreException {
+    Set<Action> updates = new HashSet<>();
+    updates.add(new Action(Action.Type.VERSION_CHANGE,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8, null));
+    if (!isMaven) {
+      updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_8, null));
+    }
+    logger.fine(getProject() + ": changing facets: " + updates);
+    project.modify(updates, monitor);
   }
 
   @Override
