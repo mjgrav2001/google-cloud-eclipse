@@ -173,7 +173,7 @@ public class AppEngineStandardFacet {
       return;
     }
 
-    final IFacetedProjectWorkingCopy workingCopy = facetedProject.createWorkingCopy();
+    IFacetedProjectWorkingCopy workingCopy = facetedProject.createWorkingCopy();
     workingCopy.detect(subMonitor.newChild(20));
     workingCopy.commitChanges(subMonitor.newChild(20));
 
