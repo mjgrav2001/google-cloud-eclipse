@@ -32,9 +32,9 @@ public class AppEngineStandardProjectConvertJob extends Job {
 
   private final IFacetedProject facetedProject;
 
-  public AppEngineStandardProjectConvertJob(IFacetedProject facetedProject) {
+  public AppEngineStandardProjectConvertJob(IFacetedProject project) {
     super("App Engine Standard Project Conversion Job");
-    this.facetedProject = facetedProject;
+    this.facetedProject = project;
   }
 
   @Override

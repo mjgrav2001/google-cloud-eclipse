@@ -77,13 +77,26 @@ public class ProjectUtils {
   public static List<IProject> importProjects(Class<?> clazz, String relativeLocation,
       boolean checkBuildErrors, IProgressMonitor monitor)
       throws IOException, CoreException {
-    SubMonitor progress = SubMonitor.convert(monitor, 100);
 
     // Resolve the zip from within this bundle
     Bundle bundle = FrameworkUtil.getBundle(clazz);
     URL bundleLocation = bundle.getResource(relativeLocation);
     assertNotNull(bundleLocation);
-    URL zipLocation = FileLocator.toFileURL(bundleLocation);
+    return importProjects(bundleLocation, checkBuildErrors, monitor);
+  }
+
+  /**
+   * Import the Eclipse projects found within the bundle containing {@code clazz} at the
+   * {@code relativeLocation}. Return the list of projects imported.
+   *
+   * @throws IOException if the zip cannot be accessed
+   * @throws CoreException if a project cannot be imported
+   */
+  public static List<IProject> importProjects(URL fileLocation,
+      boolean checkBuildErrors, IProgressMonitor monitor) throws IOException, CoreException
+  {
+    SubMonitor progress = SubMonitor.convert(monitor, 100);
+    URL zipLocation = FileLocator.toFileURL(fileLocation);
     if (!zipLocation.getProtocol().equals("file")) {
       throw new IOException("could not resolve location to a file");
     }

@@ -276,5 +276,4 @@ public class ConversionTests {
       assertNull("should not have a <runtime>", descriptor.getRuntime());
     }
   }
-
 }

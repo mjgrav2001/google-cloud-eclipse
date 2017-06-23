@@ -39,14 +39,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class GpeMigratorTest {
+/** Migrates a faceted GPE project. */
+public class GpeFacetedMigratorTest {
 
   private IProject gpeProject;
 
   @Before
   public void setUp() throws IOException, CoreException {
     List<IProject> projects = ProjectUtils.importProjects(getClass(),
-        "test-projects/GPE-project.zip", false /* checkBuildErrors */, null);
+        "test-projects/GPE-faceted-project.zip", false /* checkBuildErrors */, null);
     assertEquals(1, projects.size());
     gpeProject = projects.get(0);
   }
@@ -60,8 +61,10 @@ public class GpeMigratorTest {
   public void testRemoveGpeNature() throws CoreException {
     assertTrue(gpeProject.hasNature("com.google.appengine.eclipse.core.gaeNature"));
 
-    GpeMigrator.removeGpeNature(gpeProject);
+    assertTrue(GpeMigrator.removeGpeNature(gpeProject));
     assertFalse(gpeProject.hasNature("com.google.appengine.eclipse.core.gaeNature"));
+
+    assertFalse(GpeMigrator.removeGpeNature(gpeProject));
   }
 
   @Test
@@ -71,9 +74,11 @@ public class GpeMigratorTest {
     assertTrue(containsFacet(facetedProject, "com.google.appengine.facet"));
     assertTrue(containsFacet(facetedProject, "com.google.appengine.facet.ear"));
 
-    GpeMigrator.removeGpeRuntimeAndFacets(facetedProject);
+    assertTrue(GpeMigrator.removeGpeRuntimeAndFacets(facetedProject));
     assertFalse(containsFacet(facetedProject, "com.google.appengine.facet"));
     assertFalse(containsFacet(facetedProject, "com.google.appengine.facet.ear"));
+
+    assertFalse(GpeMigrator.removeGpeRuntimeAndFacets(facetedProject));
   }
 
   @Test
@@ -85,9 +90,11 @@ public class GpeMigratorTest {
     assertEquals("Google App Engine",
         facetedProject.getTargetedRuntimes().iterator().next().getName());
 
-    GpeMigrator.removeGpeRuntimeAndFacets(facetedProject);
+    assertTrue(GpeMigrator.removeGpeRuntimeAndFacets(facetedProject));
     assertNull(facetedProject.getPrimaryRuntime());
     assertTrue(facetedProject.getTargetedRuntimes().isEmpty());
+
+    assertFalse(GpeMigrator.removeGpeRuntimeAndFacets(facetedProject));
   }
 
   @Test
@@ -98,7 +105,7 @@ public class GpeMigratorTest {
     assertFalse(metadataFile.exists());
 
     IFacetedProject facetedProject = ProjectFacetsManager.create(gpeProject);
-    GpeMigrator.removeGpeRuntimeAndFacets(facetedProject);
+    assertFalse(GpeMigrator.removeGpeRuntimeAndFacets(facetedProject));
   }
 
   @Test
@@ -112,13 +119,15 @@ public class GpeMigratorTest {
     assertTrue(containsLibrary(javaProject,
         "com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/compute-v1r150lv1.21.0"));
 
-    GpeMigrator.removeGpeClasspathEntries(gpeProject);
+    assertTrue(GpeMigrator.removeGpeClasspathEntries(gpeProject));
     assertFalse(containsLibrary(javaProject, "com.google.appengine.eclipse.core.GAE_CONTAINER"));
     assertFalse(containsLibrary(javaProject, "com.google.appengine.eclipse.wtp.GAE_WTP_CONTAINER"));
     assertFalse(containsLibrary(javaProject, "org.eclipse.jst.server.core.container/"
         + "com.google.appengine.server.runtimeTarget/Google App Engine"));
     assertFalse(containsLibrary(javaProject,
         "com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/compute-v1r150lv1.21.0"));
+
+    assertFalse(GpeMigrator.removeGpeClasspathEntries(gpeProject));
   }
 
   private static boolean containsFacet(IFacetedProject facetedProject, String facetId) {
