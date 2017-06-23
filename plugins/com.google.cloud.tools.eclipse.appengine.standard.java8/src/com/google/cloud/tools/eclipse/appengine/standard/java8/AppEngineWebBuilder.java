@@ -102,6 +102,8 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
           updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE7, null));
           if(!isMaven) {
             updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_7, null));
+            // FIXME: whattodo if DWP > 2.5? Can't downgrade version directly
+            // may need to uninstall AES+DWP and then re-install
           }
         }
         logger.fine(getProject() + ": changing facets: " + updates);
