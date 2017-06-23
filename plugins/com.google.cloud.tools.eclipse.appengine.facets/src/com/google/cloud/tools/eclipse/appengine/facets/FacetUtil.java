@@ -152,18 +152,18 @@ public class FacetUtil {
    * Create a Dynamic Web Facet configuration. The {@code webappFolder} is the location that holds
    * the {@code WEB-INF/web.xml}.
    */
-  public static IDataModel createWebFacetDataModel(IContainer webappFolder) {
-    return createWebFacetDataModel(webappFolder.getProjectRelativePath().toString());
+  public static IDataModel createWebFacetDataModel(IContainer webAppFolder) {
+    return createWebFacetDataModel(webAppFolder.getProjectRelativePath().toString());
   }
 
   /**
    * Create a Dynamic Web Facet configuration.
    */
-  public static IDataModel createWebFacetDataModel(String webInfFolder) {
+  public static IDataModel createWebFacetDataModel(String webAppFolder) {
     IDataModel webModel = DataModelFactory.createDataModel(new WebFacetInstallDataModelProvider());
     webModel.setBooleanProperty(IJ2EEModuleFacetInstallDataModelProperties.ADD_TO_EAR, false);
     webModel.setBooleanProperty(IJ2EEFacetInstallDataModelProperties.GENERATE_DD, true);
-    webModel.setStringProperty(IWebFacetInstallDataModelProperties.CONFIG_FOLDER, webInfFolder);
+    webModel.setStringProperty(IWebFacetInstallDataModelProperties.CONFIG_FOLDER, webAppFolder);
     return webModel;
   }
 

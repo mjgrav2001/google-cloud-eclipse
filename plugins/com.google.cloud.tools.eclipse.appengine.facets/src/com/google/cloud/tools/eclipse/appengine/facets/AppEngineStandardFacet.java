@@ -182,7 +182,7 @@ public class AppEngineStandardFacet {
       return;
     }
 
-    // we continue to update fpjwc to use FacetUtil.getHighestSatisfyingVersion()
+    // we continue to update workingCopy to use FacetUtil.getHighestSatisfyingVersion()
     FacetUtil facetUtil = new FacetUtil(facetedProject);
     // See if the default AppEngine Standard facet is ok
     if (!FacetUtil.conflictsWith(workingCopy, FACET.getDefaultVersion())) {

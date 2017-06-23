@@ -33,8 +33,8 @@
   <extension
         point="org.eclipse.wst.common.project.facet.core.aliases">
      <!--
-	   Previously had a single version of the App Engine Standard facet, but were unable to express
-	   the facet constraints with the new `java8` runtime 
+	   CT4E had been deployed with a single version of the App Engine Standard facet, 
+	   which was subsequently replaced with two facet versions with different IDs. 
      -->
      <facet-version-alias
            facet="com.google.cloud.tools.eclipse.appengine.facets.standard"

@@ -40,7 +40,7 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
   @Override
   public void detect(IFacetedProjectWorkingCopy workingCopy, IProgressMonitor monitor)
       throws CoreException {
-    SubMonitor progress = SubMonitor.convert(monitor, 10);
+    SubMonitor progress = SubMonitor.convert(monitor, 5);
     IFile appEngineWebXml =
         WebProjectUtil.findInWebInf(workingCopy.getProject(), new Path("appengine-web.xml"));
     String projectName = workingCopy.getProjectName();
@@ -48,8 +48,10 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
       logger.fine("skipping " + projectName + ": no appengine-web.xml found");
       return;
     }
+    progress.worked(1);
     try (InputStream content = appEngineWebXml.getContents()) {
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(content);
+      progress.worked(1);
       if (!descriptor.isJava8()) {
         logger.fine("skipping " + projectName + ": appengine-web.xml is not java8");
         return;
@@ -57,12 +59,14 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
 
       logger.fine(projectName + ": appengine-web.xml has runtime=java8");
       workingCopy.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+      progress.worked(1);
 
       if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
         logger.fine(projectName + ": setting Java 8 facet");
         Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
         workingCopy.addProjectFacet(JavaFacet.VERSION_1_8);
         workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
+        progress.worked(1);
       }
 
       if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
@@ -72,6 +76,7 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
             FacetUtil.createWebFacetDataModel(appEngineWebXml.getParent().getParent());
         workingCopy.addProjectFacet(WebFacetUtils.WEB_31);
         workingCopy.setProjectFacetActionConfig(WebFacetUtils.WEB_FACET, webModel);
+        progress.worked(1);
       }
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));
