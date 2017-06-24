@@ -56,8 +56,14 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
         logger.fine("skipping " + projectName + ": appengine-web.xml is not java8");
         return;
       }
-
       logger.fine(projectName + ": appengine-web.xml has runtime=java8");
+
+      // detectors shouldn't introduce conflicts
+      if (FacetUtil.conflictsWith(workingCopy,
+          AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8)) {
+        logger.warning("skipping " + projectName + ": project conflicts with AES java8 runtime");
+        return;
+      }
       workingCopy.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
       progress.worked(1);
 
@@ -70,7 +76,7 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
       }
 
       if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-        // FIXME: attempt to detect the version from web.xml? what if it doesn't exist?
+        // Should we attempt to detect the version from web.xml? what if web.xml doesn't exist?
         logger.fine(projectName + ": setting Dynamic Web 3.1 facet");
         Object webModel =
             FacetUtil.createWebFacetDataModel(appEngineWebXml.getParent().getParent());

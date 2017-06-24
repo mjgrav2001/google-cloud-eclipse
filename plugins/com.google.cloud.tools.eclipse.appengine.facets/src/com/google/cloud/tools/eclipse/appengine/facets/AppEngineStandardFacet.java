@@ -175,6 +175,7 @@ public class AppEngineStandardFacet {
 
     IFacetedProjectWorkingCopy workingCopy = facetedProject.createWorkingCopy();
     workingCopy.detect(subMonitor.newChild(20));
+    // detectors shouldn't introduce conflicts
     workingCopy.commitChanges(subMonitor.newChild(20));
 
     if (facetedProject.hasProjectFacet(FACET)) {

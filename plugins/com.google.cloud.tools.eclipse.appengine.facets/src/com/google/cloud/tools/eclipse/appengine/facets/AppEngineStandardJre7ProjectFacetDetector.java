@@ -56,8 +56,13 @@ public class AppEngineStandardJre7ProjectFacetDetector extends ProjectFacetDetec
         logger.fine("skipping " + projectName + ": appengine-web.xml is not java7");
         return;
       }
-      
       logger.fine(projectName + ": appengine-web.xml has java7 runtime");
+      
+      // detectors shouldn't introduce conflicts
+      if (FacetUtil.conflictsWith(workingCopy, AppEngineStandardFacet.JRE7)) {
+        logger.warning("skipping " + projectName + ": project conflicts with AES java7 runtime");
+        return;
+      }
       workingCopy.addProjectFacet(AppEngineStandardFacet.JRE7);
       progress.worked(1);
 

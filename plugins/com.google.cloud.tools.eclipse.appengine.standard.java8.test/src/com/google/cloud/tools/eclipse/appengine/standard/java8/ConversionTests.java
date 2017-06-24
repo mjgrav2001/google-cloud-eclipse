@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.cloud.tools.appengine.AppEngineDescriptor;
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
@@ -35,11 +36,14 @@ import java.nio.charset.StandardCharsets;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -57,16 +61,15 @@ public class ConversionTests {
       throws CoreException, IOException, InterruptedException, SAXException {
     IFacetedProject project = projectCreator
         .withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25).getFacetedProject();
+
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
     // ensure facet versions haven't been downgraded
-    assertEquals(JavaFacet.VERSION_1_7, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_25, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertEquals(AppEngineStandardFacet.JRE7,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
     assertNoJava8Runtime(project);
   }
 
@@ -78,14 +81,12 @@ public class ConversionTests {
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
     // ensure facet versions haven't been downgraded
-    assertEquals(JavaFacet.VERSION_1_7, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_31, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertEquals(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
-    assertHasJava8Runtime(project);
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
   }
 
   @Test
@@ -96,14 +97,12 @@ public class ConversionTests {
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
     // ensure facet versions haven't been downgraded
-    assertEquals(JavaFacet.VERSION_1_8, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_25, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertEquals(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
-    assertHasJava8Runtime(project);
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
   }
 
   @Test
@@ -114,144 +113,280 @@ public class ConversionTests {
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
     // ensure facet versions haven't been downgraded
-    assertEquals(JavaFacet.VERSION_1_8, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_31, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertEquals(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
-    assertHasJava8Runtime(project);
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
   }
 
   @Test
   public void appEngineWebWithNoRuntime()
       throws CoreException, IOException, InterruptedException, SAXException {
     IFacetedProject project = projectCreator.getFacetedProject();
-    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
-    ResourceUtils.createFolders(webInf, null);
-    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
-    appEngineWeb.create(
-        new ByteArrayInputStream(
-            "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'></appengine-web-app>"
-                .getBytes(StandardCharsets.UTF_8)),
-        true, null);
+    createAppEngineWebWithNoRuntime(project);
 
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
-    assertEquals(JavaFacet.VERSION_1_7, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_25, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertEquals(AppEngineStandardFacet.JRE7,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
     assertNoJava8Runtime(project);
   }
 
   @Test
-  public void appEngineWebWithNoRuntime_java7()
+  public void appEngineWebWithNoRuntime_Java7()
       throws CoreException, IOException, InterruptedException, SAXException {
     IFacetedProject project =
         projectCreator.withFacetVersions(JavaFacet.VERSION_1_7).getFacetedProject();
-    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
-    ResourceUtils.createFolders(webInf, null);
-    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
-    appEngineWeb.create(
-        new ByteArrayInputStream(
-            "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'></appengine-web-app>"
-                .getBytes(StandardCharsets.UTF_8)),
-        true, null);
+    createAppEngineWebWithNoRuntime(project);
 
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
-    assertEquals(JavaFacet.VERSION_1_7, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_25, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertEquals(AppEngineStandardFacet.JRE7,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
     assertNoJava8Runtime(project);
   }
 
   @Test
-  public void appEngineWebWithNoRuntime_java8()
+  public void appEngineWebWithNoRuntime_Java7_Web25()
       throws CoreException, IOException, InterruptedException, SAXException {
-    IFacetedProject project =
-        projectCreator.withFacetVersions(JavaFacet.VERSION_1_8).getFacetedProject();
-    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
-    ResourceUtils.createFolders(webInf, null);
-    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
-    appEngineWeb.create(
-        new ByteArrayInputStream(
-            "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'></appengine-web-app>"
-                .getBytes(StandardCharsets.UTF_8)),
-        true, null);
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25).getFacetedProject();
+    createAppEngineWebWithNoRuntime(project);
 
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertFalse("conversion should not succeed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
+    assertNoJava8Runtime(project);
+  }
+
+  @Ignore("Cannot currently downgrade DWP from 3.1 to 2.5")
+  @Test
+  public void appEngineWebWithNoRuntime_Java7_Web31()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_31).getFacetedProject();
+    createAppEngineWebWithNoRuntime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
+    assertNoJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithNoRuntime_Java8()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project =
+        projectCreator.withFacetVersions(JavaFacet.VERSION_1_8).getFacetedProject();
+    createAppEngineWebWithNoRuntime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
+    assertNoJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithNoRuntime_Java8_Web25()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25).getFacetedProject();
+    createAppEngineWebWithNoRuntime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
+    assertNoJava8Runtime(project);
+  }
+
+  @Ignore("Cannot currently downgrade DWP from 3.1 to 2.5")
+  @Test
+  public void appEngineWebWithNoRuntime_Java8_Web31()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31).getFacetedProject();
+    createAppEngineWebWithNoRuntime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25,
+        AppEngineStandardFacet.JRE7);
+    assertNoJava8Runtime(project);
   }
 
   @Test
   public void appEngineWebWithJava8Runtime()
       throws CoreException, IOException, InterruptedException, SAXException {
     IFacetedProject project = projectCreator.getFacetedProject();
-    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
-    ResourceUtils.createFolders(webInf, null);
-    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
-    appEngineWeb.create(
-        new ByteArrayInputStream(
-            "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'><runtime>java8</runtime></appengine-web-app>"
-            .getBytes(StandardCharsets.UTF_8)),
-        true, null);
+    createAppEngineWebWithJava8Runtime(project);
 
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
-    assertEquals(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
-    assertEquals(JavaFacet.VERSION_1_8, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_31, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertHasJava8Runtime(project);
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
   }
 
   @Test
-  public void appEngineWebWithJava8Runtime_java7()
+  public void appEngineWebWithJava8Runtime_Java7()
       throws CoreException, IOException, InterruptedException, SAXException {
     IFacetedProject project =
         projectCreator.withFacetVersions(JavaFacet.VERSION_1_7).getFacetedProject();
-    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
-    ResourceUtils.createFolders(webInf, null);
-    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
-    appEngineWeb.create(
-        new ByteArrayInputStream(
-            "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'><runtime>java8</runtime></appengine-web-app>"
-            .getBytes(StandardCharsets.UTF_8)),
-        true, null);
+    createAppEngineWebWithJava8Runtime(project);
 
     Job conversionJob = new AppEngineStandardProjectConvertJob(project);
     conversionJob.schedule();
     conversionJob.join();
-    assertTrue("conversion should not have failed", conversionJob.getResult().isOK());
+    assertIsOk("conversion should never fail", conversionJob.getResult());
 
-    assertEquals(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8,
-        project.getProjectFacetVersion(AppEngineStandardFacet.FACET));
-    assertEquals(JavaFacet.VERSION_1_7, project.getProjectFacetVersion(JavaFacet.FACET));
-    assertEquals(WebFacetUtils.WEB_31, project.getProjectFacetVersion(WebFacetUtils.WEB_FACET));
-    assertHasJava8Runtime(project);
+    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithJava8Runtime_Java7_Web25()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25).getFacetedProject();
+    createAppEngineWebWithJava8Runtime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithJava8Runtime_Java7_Web31()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_7, WebFacetUtils.WEB_31).getFacetedProject();
+    createAppEngineWebWithJava8Runtime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithJava8Runtime_Java8()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project =
+        projectCreator.withFacetVersions(JavaFacet.VERSION_1_8).getFacetedProject();
+    createAppEngineWebWithJava8Runtime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithJava8Runtime_Java8_Web25()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25).getFacetedProject();
+    createAppEngineWebWithJava8Runtime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_25,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
+  }
+
+  @Test
+  public void appEngineWebWithJava8Runtime_Java8_Web31()
+      throws CoreException, IOException, InterruptedException, SAXException {
+    IFacetedProject project = projectCreator
+        .withFacetVersions(JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31).getFacetedProject();
+    createAppEngineWebWithJava8Runtime(project);
+
+    Job conversionJob = new AppEngineStandardProjectConvertJob(project);
+    conversionJob.schedule();
+    conversionJob.join();
+    assertIsOk("conversion should never fail", conversionJob.getResult());
+
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31,
+        AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
+    assertJava8Runtime(project);
   }
 
 
 
-  /********************************************************************/
+  /*******************************************************************/
+
+  private void createAppEngineWebWithNoRuntime(IFacetedProject project) throws CoreException {
+    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
+    ResourceUtils.createFolders(webInf, null);
+    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
+    appEngineWeb.create(new ByteArrayInputStream(
+        "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'></appengine-web-app>"
+            .getBytes(StandardCharsets.UTF_8)),
+        true, null);
+
+  }
+
+  private void createAppEngineWebWithJava8Runtime(IFacetedProject project) throws CoreException {
+    IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
+    ResourceUtils.createFolders(webInf, null);
+    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
+    appEngineWeb.create(new ByteArrayInputStream(
+        "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'><runtime>java8</runtime></appengine-web-app>"
+            .getBytes(StandardCharsets.UTF_8)),
+        true, null);
+
+  }
 
   /** Verify that appengine-web.xml has <runtime>java8</runtime>. */
-  private void assertHasJava8Runtime(IFacetedProject project)
+  private void assertJava8Runtime(IFacetedProject project)
       throws IOException, SAXException, CoreException {
     IFile appengineWebXml =
         WebProjectUtil.findInWebInf(project.getProject(), new Path("appengine-web.xml"));
@@ -274,6 +409,18 @@ public class ConversionTests {
       AppEngineDescriptor descriptor = AppEngineDescriptor.parse(input);
       assertFalse("should not have <runtime>java8</runtime>", descriptor.isJava8());
       assertNull("should not have a <runtime>", descriptor.getRuntime());
+    }
+  }
+
+  private void assertFacetVersions(IFacetedProject project, IProjectFacetVersion... versions) {
+    for (IProjectFacetVersion version : versions) {
+      assertEquals(version, project.getProjectFacetVersion(version.getProjectFacet()));
+    }
+  }
+
+  private void assertIsOk(String message, IStatus status) {
+    if (!status.isOK()) {
+      fail(message + ": " + status);
     }
   }
 }
