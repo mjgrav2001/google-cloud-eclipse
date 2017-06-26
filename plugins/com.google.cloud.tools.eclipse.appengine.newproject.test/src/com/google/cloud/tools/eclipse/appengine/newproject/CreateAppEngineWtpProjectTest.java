@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -42,8 +43,6 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.junit.JUnitCore;
-import org.eclipse.wst.common.componentcore.internal.StructureEdit;
-import org.eclipse.wst.common.componentcore.internal.WorkbenchComponent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -142,23 +141,16 @@ abstract public class CreateAppEngineWtpProjectTest {
   }
 
   @Test
-  public void testNoTestClassesInDeploymentAssembly()
-      throws InvocationTargetException, CoreException {
+  public void testNoTestClassesInDeploymentAssembly() throws InvocationTargetException,
+      CoreException, OperationCanceledException, InterruptedException {
     CreateAppEngineWtpProject creator = newCreateAppEngineWtpProject();
     creator.execute(monitor);
+    creator.deployAssemblyEntryRemoveJob.join(180000 /* 3 minutes */, monitor);
 
-    assertNoTestClassesInDeploymentAssembly();
-  }
-
-  private void assertNoTestClassesInDeploymentAssembly() {
-    StructureEdit core = StructureEdit.getStructureEditForRead(project);
-    try {
-      WorkbenchComponent component = core.getComponent();
-      assertEquals(0, component.findResourcesBySourcePath(new Path("/src/test/java"), 0).length);
-      assertEquals(1, component.findResourcesBySourcePath(new Path("/src/main/java"), 0).length);
-    } finally {
-      core.dispose();
-    }
+    assertFalse(DeployAssemblyEntryRemoveJobTest.hasSourcePathInDeployAssembly(project,
+        new Path("src/test/java")));
+    assertTrue(DeployAssemblyEntryRemoveJobTest.hasSourcePathInDeployAssembly(project,
+        new Path("src/main/java")));
   }
 
   @Test

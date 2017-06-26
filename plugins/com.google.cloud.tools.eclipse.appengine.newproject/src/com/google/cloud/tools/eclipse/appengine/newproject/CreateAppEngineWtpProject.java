@@ -16,9 +16,9 @@
 
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
-import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
 import com.google.cloud.tools.eclipse.util.ClasspathUtil;
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.logging.Level;
@@ -62,6 +62,9 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
   private final AppEngineProjectConfig config;
   private final IAdaptable uiInfoAdapter;
   private IFile mostImportant = null;
+
+  @VisibleForTesting
+  Job deployAssemblyEntryRemoveJob;
 
   public abstract void addAppEngineFacet(IProject newProject, IProgressMonitor monitor)
       throws CoreException;
@@ -128,7 +131,7 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
     fixTestSourceDirectorySettings(newProject, subMonitor.newChild(2));
   }
 
-  private static void fixTestSourceDirectorySettings(IProject newProject, IProgressMonitor monitor)
+  private void fixTestSourceDirectorySettings(IProject newProject, IProgressMonitor monitor)
       throws CoreException {
     // 1. Fix the output folder of "src/test/java".
     IPath testSourcePath = newProject.getFolder("src/test/java").getFullPath();
@@ -151,7 +154,15 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
     }
 
     // 2. Remove "src/test/java" from the Web Deployment Assembly sources.
-    WebProjectUtil.removeWebDeploymentAssemblyEntry(newProject, new Path("src/test/java"));
+    deployAssemblyEntryRemoveJob =
+        new DeployAssemblyEntryRemoveJob(newProject, new Path("src/test/java"));
+    // Not to be affected by "NonSystemJobSuspender". Not necessary in production, but necessary
+    // for tests to work properly. (As a side note, setting this to system would have not worked
+    // if the deploy assembly update jobs triggered by the above classpath change were non-system
+    // jobs; the update jobs should be visible by "DeployAssemblyEntryRemoveJob" because it joins
+    // the update jobs before removing entries.)
+    deployAssemblyEntryRemoveJob.setSystem(true);
+    deployAssemblyEntryRemoveJob.schedule();
   }
 
   private static void enableMavenNature(IProject newProject, IProgressMonitor monitor)
