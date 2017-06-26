@@ -34,7 +34,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -167,7 +166,6 @@ public class AppEngineWebBuilderTest {
    * Project adding App Engine Standard facet should have builder, and should downgrade the Dynamic
    * Web Project facet appropriately.
    */
-  @Ignore("Removing <runtime>java8</runtime> cannot currently downgrade DWP from 3.1 to 2.5")
   @Test
   public void testRemovingJava8Runtime_webFacet() throws CoreException {
     testProject.withFacetVersions(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8,

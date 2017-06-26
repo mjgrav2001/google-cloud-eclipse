@@ -30,6 +30,21 @@
         </constraint>
     </project-facet-version>
    </extension>
+   
+   <!-- allow downgrading from 3.1 to 2.5 for App Engine apps -->
+   <extension
+         point="org.eclipse.wst.common.project.facet.core.facets">
+    <action
+          facet="jst.web"
+          id="aes8.to.aes7"
+          type="version-change"
+          version="[2.5-3.1]">
+       <delegate
+             class="org.eclipse.jst.j2ee.project.facet.J2EEFacetVersionChangeDelegate">
+       </delegate>
+       <property name="from.versions" value="3.0,3.1"/>
+    </action>
+   </extension>
 
    <extension
          point="org.eclipse.wst.common.project.facet.core.runtimes">

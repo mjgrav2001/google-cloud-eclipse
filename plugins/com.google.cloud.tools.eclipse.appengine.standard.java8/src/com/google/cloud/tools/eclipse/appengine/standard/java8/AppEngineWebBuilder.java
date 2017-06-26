@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
+import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject.Action;
 import org.eclipse.wst.common.project.facet.core.ProjectFacetsManager;
@@ -116,8 +117,7 @@ public class AppEngineWebBuilder extends IncrementalProjectBuilder {
     updates.add(new Action(Action.Type.VERSION_CHANGE, AppEngineStandardFacet.JRE7, null));
     if (!isMaven) {
       updates.add(new Action(Action.Type.VERSION_CHANGE, JavaFacet.VERSION_1_7, null));
-      // FIXME: whattodo if DWP > 2.5? Can't downgrade version directly
-      // may need to uninstall AES+DWP and then re-install
+      updates.add(new Action(Action.Type.VERSION_CHANGE, WebFacetUtils.WEB_25, null));
     }
     logger.fine(getProject() + ": changing facets: " + updates);
     project.modify(updates, monitor);

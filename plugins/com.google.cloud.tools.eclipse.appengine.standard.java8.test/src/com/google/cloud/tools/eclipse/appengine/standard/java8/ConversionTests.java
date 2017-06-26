@@ -46,7 +46,6 @@ import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -181,7 +180,6 @@ public class ConversionTests {
     assertNoJava8Runtime(project);
   }
 
-  @Ignore("Cannot currently downgrade DWP from 3.1 to 2.5")
   @Test
   public void appEngineWebWithNoRuntime_Java7_Web31()
       throws CoreException, IOException, InterruptedException, SAXException {
@@ -233,7 +231,6 @@ public class ConversionTests {
     assertNoJava8Runtime(project);
   }
 
-  @Ignore("Cannot currently downgrade DWP from 3.1 to 2.5")
   @Test
   public void appEngineWebWithNoRuntime_Java8_Web31()
       throws CoreException, IOException, InterruptedException, SAXException {
