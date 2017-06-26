@@ -35,6 +35,7 @@ import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.componentcore.internal.builder.DependencyGraphImpl;
 import org.eclipse.wst.common.componentcore.internal.builder.IDependencyGraph;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
+import org.eclipse.wst.common.project.facet.core.IFacetedProjectBase;
 import org.eclipse.wst.common.project.facet.core.IFacetedProjectWorkingCopy;
 import org.eclipse.wst.common.project.facet.core.IProjectFacet;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
@@ -183,6 +184,9 @@ public class AppEngineStandardFacet {
       return;
     }
 
+    // We have a conflict between the current facet versions and the AES facet
+    // Need to figure out: what AES version do we install? How do we upgrade or downgrade?
+
     // we continue to update workingCopy to use FacetUtil.getHighestSatisfyingVersion()
     FacetUtil facetUtil = new FacetUtil(facetedProject);
     // See if the default AppEngine Standard facet is ok
@@ -232,7 +236,8 @@ public class AppEngineStandardFacet {
    * @throws CoreException if the project contains one or more facets that are not supported by
    *     this runtime; if failed for any other reason
    */
-  public static void installAllAppEngineRuntimes(IFacetedProject project, IProgressMonitor monitor)
+  public static void installAllAppEngineRuntimes(IFacetedProjectBase project,
+      IProgressMonitor monitor)
       throws CoreException {
     // If the project already has an App Engine runtime instance
     // do not add any other App Engine runtime instances to the list of targeted runtimes
@@ -263,17 +268,34 @@ public class AppEngineStandardFacet {
         progress.setWorkRemaining(appEngineRuntimes.length);
         for (org.eclipse.wst.server.core.IRuntime appEngineRuntime : appEngineRuntimes) {
           appEngineFacetRuntime = org.eclipse.jst.server.core.FacetUtil.getRuntime(appEngineRuntime);
-          project.addTargetedRuntime(appEngineFacetRuntime, progress.newChild(1));
+          if (project instanceof IFacetedProject) {
+            ((IFacetedProject) project).addTargetedRuntime(appEngineFacetRuntime,
+                progress.newChild(1));
+          } else {
+            ((IFacetedProjectWorkingCopy) project).addTargetedRuntime(appEngineFacetRuntime);
+          }
         }
-        project.setPrimaryRuntime(appEngineFacetRuntime, monitor);
+        if (project instanceof IFacetedProject) {
+          ((IFacetedProject) project).setPrimaryRuntime(appEngineFacetRuntime,
+              progress.newChild(1));
+        } else {
+          ((IFacetedProjectWorkingCopy) project).setPrimaryRuntime(appEngineFacetRuntime);
+        }
       } else { // Create a new App Engine runtime
         IRuntime appEngineFacetRuntime = createAppEngineFacetRuntime(progress.newChild(10));
         if (appEngineFacetRuntime == null) {
           throw new NullPointerException("Could not locate App Engine facet runtime");
         }
 
-        project.addTargetedRuntime(appEngineFacetRuntime, progress.newChild(10));
-        project.setPrimaryRuntime(appEngineFacetRuntime, progress.newChild(10));
+        if (project instanceof IFacetedProject) {
+          ((IFacetedProject) project).addTargetedRuntime(appEngineFacetRuntime,
+              progress.newChild(10));
+          ((IFacetedProject) project).setPrimaryRuntime(appEngineFacetRuntime,
+              progress.newChild(10));
+        } else {
+          ((IFacetedProjectWorkingCopy) project).addTargetedRuntime(appEngineFacetRuntime);
+          ((IFacetedProjectWorkingCopy) project).setPrimaryRuntime(appEngineFacetRuntime);
+        }
       }
     } finally {
       IDependencyGraph.INSTANCE.postUpdate();

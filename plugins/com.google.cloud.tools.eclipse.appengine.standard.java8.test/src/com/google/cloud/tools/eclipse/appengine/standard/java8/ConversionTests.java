@@ -29,9 +29,11 @@ import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.appengine.facets.convert.AppEngineStandardProjectConvertJob;
 import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 import com.google.cloud.tools.eclipse.util.io.ResourceUtils;
+import com.google.common.io.CharStreams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -43,6 +45,7 @@ import org.eclipse.jst.common.project.facet.core.JavaFacet;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +58,13 @@ import org.xml.sax.SAXException;
 public class ConversionTests {
   @Rule
   public TestProjectCreator projectCreator = new TestProjectCreator();
+
+  private String originalAppEngineWebContent;
+
+  @After
+  public void tearDown() {
+
+  }
 
   @Test
   public void bare_Java7_Web25()
@@ -269,7 +279,7 @@ public class ConversionTests {
     conversionJob.join();
     assertIsOk("conversion should never fail", conversionJob.getResult());
 
-    assertFacetVersions(project, JavaFacet.VERSION_1_7, WebFacetUtils.WEB_31,
+    assertFacetVersions(project, JavaFacet.VERSION_1_8, WebFacetUtils.WEB_31,
         AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
     assertJava8Runtime(project);
   }
@@ -363,7 +373,8 @@ public class ConversionTests {
 
   /*******************************************************************/
 
-  private void createAppEngineWebWithNoRuntime(IFacetedProject project) throws CoreException {
+  private void createAppEngineWebWithNoRuntime(IFacetedProject project)
+      throws CoreException, IOException {
     IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
     ResourceUtils.createFolders(webInf, null);
     IFile appEngineWeb = webInf.getFile("appengine-web.xml");
@@ -371,18 +382,23 @@ public class ConversionTests {
         "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'></appengine-web-app>"
             .getBytes(StandardCharsets.UTF_8)),
         true, null);
-
+    originalAppEngineWebContent = CharStreams
+        .toString(new InputStreamReader(appEngineWeb.getContents(), StandardCharsets.UTF_8));
   }
 
-  private void createAppEngineWebWithJava8Runtime(IFacetedProject project) throws CoreException {
+  private void createAppEngineWebWithJava8Runtime(IFacetedProject project)
+      throws CoreException, IOException {
     IFolder webInf = project.getProject().getFolder("WebContent/WEB-INF");
     ResourceUtils.createFolders(webInf, null);
-    IFile appEngineWeb = webInf.getFile("appengine-web.xml");
-    appEngineWeb.create(new ByteArrayInputStream(
+    IFile appengineWebXml = webInf.getFile("appengine-web.xml");
+    appengineWebXml.create(new ByteArrayInputStream(
         "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'><runtime>java8</runtime></appengine-web-app>"
             .getBytes(StandardCharsets.UTF_8)),
         true, null);
-
+    try (InputStream contents = appengineWebXml.getContents()) {
+      originalAppEngineWebContent =
+          CharStreams.toString(new InputStreamReader(contents, StandardCharsets.UTF_8));
+    }
   }
 
   /** Verify that appengine-web.xml has <runtime>java8</runtime>. */
@@ -392,8 +408,15 @@ public class ConversionTests {
         WebProjectUtil.findInWebInf(project.getProject(), new Path("appengine-web.xml"));
     assertNotNull("appengine-web.xml is missing", appengineWebXml);
     assertTrue("appengine-web.xml does not exist", appengineWebXml.exists());
-    try (InputStream input = appengineWebXml.getContents()) {
-      AppEngineDescriptor descriptor = AppEngineDescriptor.parse(input);
+    try (InputStream contents = appengineWebXml.getContents()) {
+      String appEngineWebContent =
+          CharStreams.toString(new InputStreamReader(contents, StandardCharsets.UTF_8));
+      if (originalAppEngineWebContent != null) {
+        assertEquals("appengine-web.xml was changed", originalAppEngineWebContent,
+            appEngineWebContent);
+      }
+      AppEngineDescriptor descriptor = AppEngineDescriptor
+          .parse(new ByteArrayInputStream(appEngineWebContent.getBytes(StandardCharsets.UTF_8)));
       assertTrue("should have <runtime>java8</runtime>", descriptor.isJava8());
     }
   }
@@ -405,8 +428,15 @@ public class ConversionTests {
         WebProjectUtil.findInWebInf(project.getProject(), new Path("appengine-web.xml"));
     assertNotNull("appengine-web.xml is missing", appengineWebXml);
     assertTrue("appengine-web.xml does not exist", appengineWebXml.exists());
-    try (InputStream input = appengineWebXml.getContents()) {
-      AppEngineDescriptor descriptor = AppEngineDescriptor.parse(input);
+    try (InputStream contents = appengineWebXml.getContents()) {
+      String appEngineWebContent =
+          CharStreams.toString(new InputStreamReader(contents, StandardCharsets.UTF_8));
+      if (originalAppEngineWebContent != null) {
+        assertEquals("appengine-web.xml was changed", originalAppEngineWebContent,
+            appEngineWebContent);
+      }
+      AppEngineDescriptor descriptor = AppEngineDescriptor
+          .parse(new ByteArrayInputStream(appEngineWebContent.getBytes(StandardCharsets.UTF_8)));
       assertFalse("should not have <runtime>java8</runtime>", descriptor.isJava8());
       assertNull("should not have a <runtime>", descriptor.getRuntime());
     }

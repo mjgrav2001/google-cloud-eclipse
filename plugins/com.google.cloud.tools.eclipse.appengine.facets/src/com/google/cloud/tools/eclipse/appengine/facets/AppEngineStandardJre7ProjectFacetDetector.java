@@ -58,31 +58,37 @@ public class AppEngineStandardJre7ProjectFacetDetector extends ProjectFacetDetec
       }
       logger.fine(projectName + ": appengine-web.xml has java7 runtime");
       
-      // detectors shouldn't introduce conflicts
-      if (FacetUtil.conflictsWith(workingCopy, AppEngineStandardFacet.JRE7)) {
-        logger.warning("skipping " + projectName + ": project conflicts with AES java7 runtime");
-        return;
-      }
+      logger.fine(projectName + ": setting App Engine Standard JRE7 facet");
       workingCopy.addProjectFacet(AppEngineStandardFacet.JRE7);
       progress.worked(1);
 
-      if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
-        logger.fine(projectName + ": setting Java 7 facet");
-        Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
-        workingCopy.addProjectFacet(JavaFacet.VERSION_1_7);
-        workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
+      if (!workingCopy.hasProjectFacet(JavaFacet.VERSION_1_7)) {
+        if (workingCopy.hasProjectFacet(JavaFacet.FACET)) {
+          logger.fine(projectName + ": changing to Java 7 facet");
+          workingCopy.changeProjectFacetVersion(JavaFacet.VERSION_1_7);
+        } else {
+          logger.fine(projectName + ": setting Java 7 facet");
+          Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
+          workingCopy.addProjectFacet(JavaFacet.VERSION_1_7);
+          workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
+        }
         progress.worked(1);
       }
 
-      if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
-        logger.fine(projectName + ": setting Dynamic Web 2.5 facet");
-
-        Object webModel =
-            FacetUtil.createWebFacetDataModel(appEngineWebXml.getParent().getParent());
-        workingCopy.addProjectFacet(WebFacetUtils.WEB_25);
-        workingCopy.setProjectFacetActionConfig(WebFacetUtils.WEB_FACET, webModel);
+      if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_25)) {
+        if (workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
+          logger.fine(projectName + ": changing to Dynamic Web 2.5 facet");
+          workingCopy.changeProjectFacetVersion(WebFacetUtils.WEB_25);
+        } else {
+          logger.fine(projectName + ": setting Dynamic Web 2.5 facet");
+          Object webModel =
+              FacetUtil.createWebFacetDataModel(appEngineWebXml.getParent().getParent());
+          workingCopy.addProjectFacet(WebFacetUtils.WEB_25);
+          workingCopy.setProjectFacetActionConfig(WebFacetUtils.WEB_FACET, webModel);
+        }
         progress.worked(1);
       }
+      AppEngineStandardFacet.installAllAppEngineRuntimes(workingCopy, progress.newChild(1));
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));
     }

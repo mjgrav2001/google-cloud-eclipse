@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
 import com.google.cloud.tools.appengine.AppEngineDescriptor;
+import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.appengine.facets.FacetUtil;
 import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
@@ -58,7 +59,6 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
       }
       logger.fine(projectName + ": appengine-web.xml has runtime=java8");
 
-      // detectors shouldn't introduce conflicts
       if (FacetUtil.conflictsWith(workingCopy,
           AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8)) {
         logger.warning("skipping " + projectName + ": project conflicts with AES java8 runtime");
@@ -67,14 +67,20 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
       workingCopy.addProjectFacet(AppEngineStandardFacetChangeListener.APP_ENGINE_STANDARD_JRE8);
       progress.worked(1);
 
-      if (!workingCopy.hasProjectFacet(JavaFacet.FACET)) {
-        logger.fine(projectName + ": setting Java 8 facet");
-        Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
-        workingCopy.addProjectFacet(JavaFacet.VERSION_1_8);
-        workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
+      // Always change to the Java 8 facet
+      if (!workingCopy.hasProjectFacet(JavaFacet.VERSION_1_8)) {
+        if (workingCopy.hasProjectFacet(JavaFacet.FACET)) {
+          workingCopy.changeProjectFacetVersion(JavaFacet.VERSION_1_8);
+        } else {
+          logger.fine(projectName + ": setting Java 8 facet");
+          Object javaModel = FacetUtil.createJavaDataModel(workingCopy.getProject());
+          workingCopy.addProjectFacet(JavaFacet.VERSION_1_8);
+          workingCopy.setProjectFacetActionConfig(JavaFacet.FACET, javaModel);
+        }
         progress.worked(1);
       }
 
+      // But we don't touch the Dynamic Web facet unless required
       if (!workingCopy.hasProjectFacet(WebFacetUtils.WEB_FACET)) {
         // Should we attempt to detect the version from web.xml? what if web.xml doesn't exist?
         logger.fine(projectName + ": setting Dynamic Web 3.1 facet");
@@ -84,6 +90,7 @@ public class AppEngineStandardJre8ProjectFacetDetector extends ProjectFacetDetec
         workingCopy.setProjectFacetActionConfig(WebFacetUtils.WEB_FACET, webModel);
         progress.worked(1);
       }
+      AppEngineStandardFacet.installAllAppEngineRuntimes(workingCopy, progress.newChild(1));
     } catch (SAXException | IOException ex) {
       throw new CoreException(StatusUtil.error(this, "Unable to retrieve appengine-web.xml", ex));
     }

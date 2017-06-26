@@ -16,8 +16,11 @@
 
 package com.google.cloud.tools.eclipse.appengine.standard.java8;
 
+import com.google.cloud.tools.appengine.AppEngineDescriptor;
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.resources.ICommand;
@@ -32,6 +35,7 @@ import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectEvent;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectEvent.Type;
 import org.eclipse.wst.common.project.facet.core.events.IFacetedProjectListener;
 import org.eclipse.wst.common.project.facet.core.events.IProjectFacetActionEvent;
+import org.xml.sax.SAXException;
 
 /**
  * Reflects facet changes to and from the {@code appengine-web.xml}. Also add/remove the
@@ -61,15 +65,32 @@ public class AppEngineStandardFacetChangeListener implements IFacetedProjectList
       return;
     }
     addAppEngineWebBuilder(project.getProject());
+
     IFile descriptor = findDescriptor(project);
     if (descriptor == null) {
       logger.warning(project + ": cannot find appengine-web.xml");
       return;
     }
-    if (APP_ENGINE_STANDARD_JRE8.equals(action.getProjectFacetVersion())) {
-      AppEngineDescriptorTransform.addJava8Runtime(descriptor);
-    } else {
-      AppEngineDescriptorTransform.removeJava8Runtime(descriptor);
+    try {
+      boolean isDescriptorJava8 = isJava8(descriptor);
+      boolean isFacetJava8 = APP_ENGINE_STANDARD_JRE8.equals(action.getProjectFacetVersion());
+      if (isDescriptorJava8 != isFacetJava8) {
+        if (isFacetJava8) {
+          logger.fine(project + ": adding <runtime>java8</runtime> to appengine-web.xml");
+          AppEngineDescriptorTransform.addJava8Runtime(descriptor);
+        } else {
+          logger.fine(project + ": removing <runtime>java8</runtime> from appengine-web.xml");
+          AppEngineDescriptorTransform.removeJava8Runtime(descriptor);
+        }
+      }
+    } catch (SAXException | IOException | CoreException ex) {
+
+    }
+  }
+
+  private boolean isJava8(IFile descriptor) throws IOException, CoreException, SAXException {
+    try (InputStream input = descriptor.getContents()) {
+      return AppEngineDescriptor.parse(input).isJava8();
     }
   }
 
