@@ -310,6 +310,13 @@ public class ProjectUtils {
       Collections.addAll(jobs, jobManager.find(
           project.getName() + ValidatorManager.VALIDATOR_JOB_FAMILY));
     }
+    for(Job job : jobManager.find(null)) {
+      // O ConvertJob, you troublesome pest
+      if (job.getClass().getName()
+          .equals("org.eclipse.wst.jsdt.web.core.internal.project.ConvertJob")) {
+        jobs.add(job);
+      }
+    }
     return jobs;
   }
 
