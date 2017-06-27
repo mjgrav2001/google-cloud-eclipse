@@ -174,10 +174,16 @@ public class AppEngineStandardFacet {
       return;
     }
 
+    String projectName = facetedProject.getProject().getName();
     IFacetedProjectWorkingCopy workingCopy = facetedProject.createWorkingCopy();
     workingCopy.detect(subMonitor.newChild(20));
-    // detectors shouldn't introduce conflicts
-    workingCopy.commitChanges(subMonitor.newChild(20));
+
+    logger.info(projectName + ": detector changes: " + workingCopy.getProjectFacetActions());
+    try {
+      workingCopy.commitChanges(subMonitor.newChild(20));
+    } catch (CoreException ex) {
+      logger.log(Level.WARNING, projectName + ": unable to commit changes", ex);
+    }
 
     if (facetedProject.hasProjectFacet(FACET)) {
       // success!
