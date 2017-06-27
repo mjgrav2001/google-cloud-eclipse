@@ -48,6 +48,11 @@ public class ThreadDumpingWatchdog extends TimerTask implements TestRule {
   private Timer timer;
   private Stopwatch stopwatch;
 
+  /** Issue a report to stdout. */
+  public static void report() {
+    new ThreadDumpingWatchdog(0, TimeUnit.DAYS, true).run();
+  }
+
   public ThreadDumpingWatchdog(long period, TimeUnit unit) {
     this(period, unit, true);
   }

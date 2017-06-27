@@ -19,8 +19,11 @@ package com.google.cloud.tools.eclipse.test.util.project;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.tools.eclipse.test.util.ThreadDumpingWatchdog;
 import com.google.cloud.tools.eclipse.test.util.reflection.ReflectionUtil;
+import com.google.cloud.tools.eclipse.util.PredicateUtil;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import java.io.File;
 import java.io.IOException;
@@ -122,7 +125,7 @@ public class ProjectUtils {
     }
 
     // wait for any post-import operations too
-    waitForProjects(projects);
+    waitForProjects(projects.toArray(new IProject[projects.size()]));
     if (checkBuildErrors) {
       failIfBuildErrors("Imported projects have errors", projects);
     }
@@ -222,12 +225,19 @@ public class ProjectUtils {
     }
   }
 
-  public static void waitForProjects(Collection<IProject> projects) {
-    waitForProjects(projects.toArray(new IProject[0]));
-  }
-
   /** Wait for any spawned jobs and builds to complete (e.g., validation jobs). */
   public static void waitForProjects(IProject... projects) {
+    waitForProjects(null, projects);
+  }
+
+  /**
+   * Wait for any spawned jobs and builds to complete (e.g., validation jobs).
+   * 
+   * @param expectedResult a predicate returning true if the proivded error marker strings are
+   *        expected
+   */
+  public static void waitForProjects(Predicate<Collection<String>> expectedResult,
+      IProject... projects) {
     Runnable delayTactic = new Runnable() {
       @Override
       public void run() {
@@ -240,13 +250,18 @@ public class ProjectUtils {
         Thread.yield();
       }
     };
-    waitForProjects(delayTactic, projects);
+    waitForProjects(delayTactic, expectedResult, projects);
   }
 
   /** Wait for any spawned jobs and builds to complete (e.g., validation jobs). */
-  public static void waitForProjects(Runnable delayTactic, IProject... projects) {
+  public static void waitForProjects(Runnable delayTactic,
+      Predicate<Collection<String>> expectedResultPredicate, IProject... projects) {
     if (projects.length == 0) {
       projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+    }
+    // if unspecified, the expected result is no build errors
+    if (expectedResultPredicate == null) {
+      expectedResultPredicate = PredicateUtil.isOfSize(0);
     }
     Stopwatch timer = Stopwatch.createStarted();
     try {
@@ -289,6 +304,10 @@ public class ProjectUtils {
           // }
         }
       } while (!jobs.isEmpty() || buildErrorsChanging);
+      boolean wasExpected = expectedResultPredicate.apply(previousBuildErrors);
+      if (!wasExpected) {
+        ThreadDumpingWatchdog.report();
+      }
     } catch (CoreException | InterruptedException ex) {
       throw new RuntimeException(ex);
     }
@@ -325,4 +344,5 @@ public class ProjectUtils {
   }
 
   private ProjectUtils() {}
+
 }

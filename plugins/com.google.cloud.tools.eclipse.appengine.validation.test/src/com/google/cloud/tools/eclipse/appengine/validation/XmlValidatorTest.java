@@ -23,9 +23,12 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.test.util.project.ProjectUtils;
 import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
+import com.google.cloud.tools.eclipse.util.PredicateUtil;
+import com.google.common.base.Predicate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -104,7 +107,10 @@ public class XmlValidatorTest {
     IProject project = dynamicWebProjectCreator.getProject();
     IFile file = project.getFile("src/bad.xml");
     file.create(new ByteArrayInputStream(badXml), true, null);
-    ProjectUtils.waitForProjects(project);  // Wait until Eclipse puts an error marker.
+
+    // Wait until Eclipse puts an error marker.
+    Predicate<Collection<String>> isOfSize1 = PredicateUtil.isOfSize(1);
+    ProjectUtils.waitForProjects(isOfSize1, project);
 
     IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
     assertEquals(1, markers.length);
@@ -146,7 +152,10 @@ public class XmlValidatorTest {
     IFile file = project.getFile("WebContent/WEB-INF/appengine-web.xml");
     file.setContents(
         new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), true, false, null);
-    ProjectUtils.waitForProjects(project);   // Wait until Eclipse puts an error marker.
+
+    // Wait until Eclipse puts an error marker.
+    Predicate<Collection<String>> isOfSize1 = PredicateUtil.isOfSize(1);
+    ProjectUtils.waitForProjects(isOfSize1, project);
 
     String problemMarker = "org.eclipse.core.resources.problemmarker";
     IMarker[] markers = file.findMarkers(problemMarker, true, IResource.DEPTH_ZERO);

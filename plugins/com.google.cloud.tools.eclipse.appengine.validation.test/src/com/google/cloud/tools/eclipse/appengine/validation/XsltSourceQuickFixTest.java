@@ -25,7 +25,10 @@ import com.google.cloud.tools.eclipse.test.util.ArrayAssertions;
 import com.google.cloud.tools.eclipse.test.util.project.ProjectUtils;
 import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
+import com.google.cloud.tools.eclipse.util.PredicateUtil;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -71,7 +74,10 @@ public class XsltSourceQuickFixTest {
 
     assertTrue(preContents.contains("application"));
 
-    ProjectUtils.waitForProjects(project);
+    // Wait until Eclipse puts an error marker.
+    Predicate<Collection<String>> isOfSize1 = PredicateUtil.isOfSize(1);
+    ProjectUtils.waitForProjects(isOfSize1, project);
+
     assertEquals(1, file.findMarkers(BLACKLIST_MARKER, true, IResource.DEPTH_ZERO).length);
 
     XsltSourceQuickFix quickFix = new XsltSourceQuickFix("/xslt/removeApplication.xsl",
